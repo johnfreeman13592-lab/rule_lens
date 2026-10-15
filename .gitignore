@@ -1,0 +1,11 @@
+/.bundle/
+/pkg/
+/*.gem
+.DS_Store
+**/log/*
+**/tmp/*
+!**/.keep
+**/config/master.key
+**/config/credentials/*.key
+**/.env*
+**/vendor/bundle/

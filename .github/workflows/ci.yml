@@ -1,0 +1,32 @@
+name: CI
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby: ['3.3', '3.4', '4.0']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - run: bundle exec rake
+      - run: gem build rule_lens.gemspec
+  playground:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/playground
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '4.0'
+          bundler-cache: true
+          working-directory: examples/playground
+      - run: bundle exec rails test
+      - run: bundle exec rails zeitwerk:check

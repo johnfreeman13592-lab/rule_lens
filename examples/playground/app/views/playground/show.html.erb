@@ -1,0 +1,73 @@
+<header class="topbar">
+  <a class="brand" href="/">◈ RuleLens <span>PLAYGROUND</span></a>
+  <span class="version">Ruby gem · v<%= RuleLens::VERSION %></span>
+</header>
+<main>
+  <div class="intro">
+    <p class="eyebrow">BUSINESS RULES, MADE VISIBLE</p>
+    <h1>その判定の、理由が見える。</h1>
+    <p class="lead">入力を変えて、ルールの合否を見比べる。<br>まずは「送料無料」の条件を試してみましょう。</p>
+  </div>
+  <div class="workspace">
+    <section class="panel inputs" aria-labelledby="input-title">
+      <div class="panel-head"><h2 id="input-title">入力を比べる</h2><span class="tag">01 / INPUT</span></div>
+      <p class="muted">変更前と変更後を自由に設定できます。</p>
+      <% if @error %><div role="alert" class="error"><%= @error %></div><% end %>
+      <%= form_with url: compare_path, method: :post, local: true do %>
+        <div class="input-columns">
+          <% [["before", "変更前"], ["after", "変更後"]].each do |side, label| %>
+            <fieldset><legend><%= label %></legend>
+              <%= label_tag "#{side}_amount", "#{label}の注文金額（円）" %>
+              <%= number_field_tag "#{side}_amount", @values["#{side}_amount"], min: 0, max: 999999999, step: 1, required: true %>
+              <%= label_tag "#{side}_destination", "#{label}の配送先" %>
+              <%= select_tag "#{side}_destination", options_for_select([["国内", "domestic"], ["海外", "overseas"]], @values["#{side}_destination"]) %>
+            </fieldset>
+          <% end %>
+        </div>
+        <%= submit_tag "ルールを比較する →", class: "primary" %>
+      <% end %>
+      <p class="footnote">入力は保存されません。判定はRubyで実行します。</p>
+    </section>
+    <section class="panel results" aria-labelledby="result-title">
+      <div class="panel-head"><h2 id="result-title">送料無料の判定</h2><span class="tag">02 / RESULT</span></div>
+      <% if @comparison %>
+        <div class="verdicts">
+          <% [["変更前", @comparison.before], ["変更後", @comparison.after]].each do |label, result| %>
+            <div class="verdict <%= result.passed? ? "pass" : "fail" %>">
+              <span><%= label %></span><strong><%= result.passed? ? "✓ 対象" : "× 対象外" %></strong>
+            </div>
+          <% end %>
+        </div>
+        <p class="change-summary"><%= @comparison.changes.size %>件の条件で合否が変わりました</p>
+        <div class="table-scroll"><table>
+          <caption class="sr-only">条件ごとの変更前と変更後の判定</caption>
+          <thead><tr><th scope="col">条件</th><th scope="col">変更前</th><th scope="col">変更後</th></tr></thead>
+          <tbody>
+            <% @comparison.rules.each do |change| %>
+              <tr class="<%= "changed" if change.changed? %>">
+                <th scope="row"><%= change.after.label %><% if change.changed? %><span class="changed-tag">変化あり</span><% end %></th>
+                <% [change.before, change.after].each do |result| %>
+                  <td><span class="status <%= result.passed? ? "pass" : "fail" %>"><%= result.passed? ? "✓ 合格" : "× 不合格" %></span></td>
+                <% end %>
+              </tr>
+            <% end %>
+          </tbody>
+        </table></div>
+        <div class="reasons"><h3>変更後の判定理由</h3>
+          <% if @comparison.after.passed? %>
+            <p>すべての条件を満たしているため、送料無料の対象です。</p>
+          <% else %>
+            <ul><% @comparison.after.failures.each do |failure| %><li><%= failure.reason %></li><% end %></ul>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="empty">入力を確認して、もう一度比較してください。</p>
+      <% end %>
+    </section>
+  </div>
+  <section class="panel definition" aria-labelledby="definition-title">
+    <div><p class="eyebrow">PLAIN RUBY. EXPLICIT RULES.</p><h2 id="definition-title">画面と判定で、同じルールを使う。</h2><p class="muted">条件はすべて評価され、合否と理由が返ります。</p></div>
+    <pre><code><%= File.read(Rails.root.join("app/models/shipping_rules.rb")) %></code></pre>
+  </section>
+  <footer>RuleLens <span>小さなルールから、理解できる判断へ。</span></footer>
+</main>
