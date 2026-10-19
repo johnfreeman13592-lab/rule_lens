@@ -36,7 +36,17 @@ gem "pundit", "~> 2.5"
 gem "rule_lens", github: "johnfreeman13592-lab/rule_lens", branch: "main"
 ```
 
-Run `bundle install`. In a development/test process after loading your application:
+Run `bundle install`. On the development branch, Rails users can scaffold a capture script:
+
+```sh
+ruby bin/rails generate rule_lens:install
+# Edit config/rule_lens_cases.rb: select a policy and prepare your test cases.
+ruby script/rule_lens_capture.rb before.json YOUR_BASELINE_REVISION
+```
+
+The generated script runs only in `test`, rejects `DATABASE_URL`, and refuses empty cases. Check your test database configuration and prepare reproducible fixtures or factories yourself; it does not create, reset or migrate databases. Existing generated files are skipped, including with `--force`. See the [setup guide](docs/saved-comparisons.md#rails用のひな形を生成する開発版).
+
+You can also use the library directly in a development/test process after loading your application:
 
 ```ruby
 require "rule_lens/pundit"

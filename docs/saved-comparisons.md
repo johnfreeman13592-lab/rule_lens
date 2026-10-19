@@ -80,6 +80,55 @@ gemとしてインストールした場合の実行名は `rule_lens`。`--fail-
 
 識別子の付け忘れや、実際には異なる入力を同じデータ版として渡したことまでは自動検出できない。既存のテストを置き換える仕組みではない。
 
+## Rails用のひな形を生成する（開発版）
+
+この機能は未公開の開発版。公開mainのv0.2.0にはまだ含まれない。開発版をローカルのpath指定で導入したRailsアプリでは、次のコマンドを使える。
+
+```sh
+ruby bin/rails generate rule_lens:install
+```
+
+次の2ファイルを作る。既存ファイルは編集内容を問わずスキップし、`--force` があっても上書きしない。再実行でひな形を更新する機能ではない。
+
+| ファイル | 編集すること |
+| --- | --- |
+| `config/rule_lens_cases.rb` | `RuleLensCapture.options` にポリシー、確認ケース、テストデータの版、必要な比較条件を指定する |
+| `script/rule_lens_capture.rb` | 通常は編集せず、出力先とコード版を渡して実行する |
+
+例えばケース定義は以下の形にする。`ArticlePolicy`、`User`、`Article`、`fixture_key` は自分のアプリに合わせる。`fixture_key` の列を追加することが必須なのではなく、各版で同じ論理データを選ぶための例。
+
+```ruby
+module RuleLensCapture
+  def self.options
+    # このプロセスで使う固定のテストデータを、アプリの方法で用意する。
+    # テスト実行時のfixturesがこのスクリプトにも自動で読み込まれるわけではない。
+    {
+      suite: "article-permissions",
+      data_version: "fixtures-v1",
+      policy: ArticlePolicy,
+      cases: [
+        RuleLens::Pundit::Case.new(
+          id: "reader.update", label: "読者が記事を編集", query: :update?
+        ) do
+          [User.find_by!(fixture_key: "reader"), Article.find_by!(fixture_key: "article")]
+        end
+      ]
+    }
+  end
+end
+```
+
+test環境のDB接続先を確認し、各実行で等価なテストデータを用意してから収録する。ひな形にはDB作成・リセット・マイグレーション・fixturesの自動読み込みを含めない。`RAILS_ENV` が未指定ならtestにし、test以外の値や `DATABASE_URL` が指定されていたらRailsを起動する前に拒否する。これだけでアプリのtest設定や初期化処理の安全性を保証するものではない。
+
+```sh
+ruby script/rule_lens_capture.rb before.json BASELINE_REVISION
+# 別のコード版・別プロセスで同じ論理テストデータを用意して実行する
+ruby script/rule_lens_capture.rb after.json CANDIDATE_REVISION
+bundle exec rule_lens compare before.json after.json --output review.html
+```
+
+コード版のラベルは指定した文字列を記録するだけで、Gitの版を自動検証・変更しない。ケース未設定はJSONを作らず終了コード2。評価エラーは例外メッセージを含めずJSONに残して2を返すので、比較レポートで確認できる。エラーのない収録は0、既存出力への書き込みは2で終了する。
+
 ## 保存形式と取り扱い
 
 形式のバージョンは `format_version: 1`。JSONにはメタデータと、ケースごとのID・ラベル・操作・ケース版・許可/拒否/評価エラー・例外クラス名だけを含める。入力オブジェクトや例外メッセージは保存しない。

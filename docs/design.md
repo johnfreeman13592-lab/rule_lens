@@ -8,6 +8,8 @@ An application-owned `RuleLens::Pundit::Case` supplies a stable ID, label, query
 
 Pundit authorization failures become `denied`; setup failures, missing methods and other exceptions become `error`. Error messages and input records are not retained. A versioned JSON snapshot records outcomes with the suite, revision label, logical data version and comparison context.
 
+The unreleased Rails install generator scaffolds an application-owned configuration and capture script. Rails discovers it from the gem's `lib/generators` path; loading the core does not load Rails. The script restricts execution to the test environment and requires at least one case. It deliberately leaves fixture preparation and database configuration to the application. Re-running the installer preserves existing files, including when passed `--force`.
+
 ## Compare
 
 Capture each code revision in its own application process. The standalone comparator validates the JSON and requires matching suite, data version and context. It joins cases by ID, rather than array position or database primary key. Changed queries or case versions are marked separately from permission changes.

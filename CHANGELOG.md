@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add `rails generate rule_lens:install` to create editable cases and a guarded capture script without overwriting existing files.
 - Group offline HTML reports into incomplete comparisons, permission changes and unchanged cases.
 - Keep unchanged cases in a collapsed, keyboard-accessible disclosure without JavaScript.
 - Show counts for each comparison category while retaining every captured case.

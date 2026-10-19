@@ -28,7 +28,7 @@ class SavedReviewTest < ActiveSupport::TestCase
     out.strip
   end
 
-  test "another Rails app captures two real Git revisions in separate processes" do
+  def with_review_app
     repo_root = Rails.root.join("../..").expand_path.to_s.tr("\\", "/")
     fixture_root = File.join(repo_root, "examples/policy_review")
     Dir.mktmpdir("rule-lens-review-") do |directory|
@@ -37,6 +37,12 @@ class SavedReviewTest < ActiveSupport::TestCase
       File.write(gemfile, File.read(gemfile, encoding: "UTF-8").sub('path: "../.."', "path: #{repo_root.dump}"), encoding: "UTF-8")
       lockfile = File.join(directory, "Gemfile.lock")
       File.write(lockfile, File.read(lockfile, encoding: "UTF-8").sub('  remote: ../..', "  remote: #{repo_root}"), encoding: "UTF-8")
+      yield directory, repo_root
+    end
+  end
+
+  test "another Rails app captures two real Git revisions in separate processes" do
+    with_review_app do |directory, repo_root|
 
       [{ "DATABASE_URL" => "sqlite3:must-not-connect.sqlite3" }, { "RAILS_ENV" => "production" }].each do |unsafe_environment|
         rejected_out, rejected_err, rejected = execute(directory, RbConfig.ruby, "script/capture.rb", "blocked.json", "unsafe", env: unsafe_environment)
@@ -85,6 +91,67 @@ class SavedReviewTest < ActiveSupport::TestCase
           File.open(File.join(artifacts, name), "wbx") { |file| file.write(File.binread(File.join(directory, name))) }
         end
       end
+    end
+  end
+
+  test "discovered install generator produces a usable capture and preserves existing files" do
+    require "rails/generators"
+    with_review_app do |directory, _|
+      # Discover the generator as Rails does, rather than requiring its class.
+      capture_io { Rails::Generators.invoke("rule_lens:install", [], destination_root: directory) }
+      config = File.join(directory, "config/rule_lens_cases.rb")
+      script = File.join(directory, "script/rule_lens_capture.rb")
+      assert File.file?(config), "Rails did not discover the installed generator"
+      assert File.file?(script)
+
+      original_script = File.binread(script) + "\n# Local customization\n"
+      File.binwrite(script, original_script)
+      configured = File.read(config, encoding: "UTF-8")
+        .sub("def self.options", "def self.options\n    ReviewData.prepare")
+        .sub('policy: nil,', 'policy: ArticlePolicy,')
+        .sub("cases: [", "cases: ReviewCases.build # [")
+        .sub("      ]", "      # ]")
+
+      _, error, result = execute(directory, RbConfig.ruby, "script/rule_lens_capture.rb", "empty.json", "baseline")
+      assert_equal 2, result.exitstatus
+      assert_includes error, "Configure at least one case"
+      refute File.exist?(File.join(directory, "empty.json"))
+
+      File.write(config, configured, encoding: "UTF-8")
+      capture_io { Rails::Generators.invoke("rule_lens:install", ["--force"], destination_root: directory) }
+      assert_equal configured, File.read(config, encoding: "UTF-8")
+      assert_equal original_script, File.binread(script)
+
+      # Invalid environments must be rejected before even loading the cases.
+      File.write(config, "raise 'must not load this configuration'", encoding: "UTF-8")
+      [{ "DATABASE_URL" => "sqlite3:must-not-connect.sqlite3" }, { "RAILS_ENV" => "production" }].each do |environment|
+        _, error, result = execute(directory, RbConfig.ruby, "script/rule_lens_capture.rb", "blocked.json", "baseline", env: environment)
+        assert_equal 2, result.exitstatus
+        assert_includes error, "Run in test"
+        refute File.exist?(File.join(directory, "blocked.json"))
+        refute File.exist?(File.join(directory, "must-not-connect.sqlite3"))
+      end
+      File.write(config, configured, encoding: "UTF-8")
+
+      output = successful(directory, RbConfig.ruby, "script/rule_lens_capture.rb", "generated.json", "baseline")
+      assert_includes output, "Saved 6 cases (0 errors)"
+      snapshot = RuleLens::Snapshots::Snapshot.load(File.join(directory, "generated.json"))
+      assert_equal "baseline", snapshot.data["revision"]
+      assert_equal 6, snapshot.data["cases"].size
+      assert_equal "denied", snapshot.data["cases"].find { |item| item["id"] == "reader.update?" }["status"]
+      previous = File.binread(File.join(directory, "generated.json"))
+      _, _, result = execute(directory, RbConfig.ruby, "script/rule_lens_capture.rb", "generated.json", "candidate")
+      assert_equal 2, result.exitstatus
+      assert_equal previous, File.binread(File.join(directory, "generated.json"))
+
+      broken = configured.sub("cases: ReviewCases.build", 'cases: [RuleLens::Pundit::Case.new(id: "broken", label: "Broken", query: :update?) { raise "private input" }]')
+      File.write(config, broken, encoding: "UTF-8")
+      output, _, result = execute(directory, RbConfig.ruby, "script/rule_lens_capture.rb", "error.json", "candidate")
+      assert_equal 2, result.exitstatus
+      assert_includes output, "1 errors"
+      error_json = File.read(File.join(directory, "error.json"), encoding: "UTF-8")
+      assert_includes error_json, "RuntimeError"
+      refute_includes error_json, "private input"
     end
   end
 end

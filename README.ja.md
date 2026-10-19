@@ -28,7 +28,17 @@ gem "pundit", "~> 2.5"
 gem "rule_lens", github: "johnfreeman13592-lab/rule_lens", branch: "main"
 ```
 
-アプリを読み込んだ開発・テスト用プロセスで確認ケースを指定します。入力は同じ論理データになるよう、fixtures（固定のテストデータ）やfactory（テストデータを作る処理）で用意します。
+開発ブランチでは、次のコマンドで導入用のひな形を作れます。
+
+```sh
+ruby bin/rails generate rule_lens:install
+# config/rule_lens_cases.rb にポリシーと確認ケースを設定する
+ruby script/rule_lens_capture.rb before.json 変更前のコード版
+```
+
+収録スクリプトはtest環境専用で、`DATABASE_URL` の指定とケース未設定を拒否します。テスト用DBの接続先を確認し、テストデータを利用側で用意してください。DB作成・初期化・マイグレーションは行いません。既存ファイルは `--force` 付きでも上書きしません。[詳しい設定手順](docs/saved-comparisons.md#rails用のひな形を生成する開発版)を参照してください。
+
+ライブラリを直接使う場合は、アプリを読み込んだ開発・テスト用プロセスで確認ケースを指定します。入力は同じ論理データになるよう、fixtures（固定のテストデータ）やfactory（テストデータを作る処理）で用意します。
 
 ```ruby
 require "rule_lens/pundit"

@@ -18,6 +18,8 @@ The release workflow runs core tests on Ruby 3.3, 3.4 and 4.0, and the Rails sui
 
 Implemented after the MVP (unreleased): reports prioritize incomplete comparisons and permission changes, with unchanged cases in a native collapsed section. All cases and category counts remain available offline.
 
+Also unreleased: a Rails install generator creates editable case definitions and a test-only capture script, preserving existing files. It reduces copying from the example; application-specific case and fixture setup still needs user input.
+
 - Reduce the effort needed to define cases and reproduce logical input data.
 - Improve report navigation based on actual review workflows.
 - Gather minimal, synthetic examples of comparisons that are difficult to review.
