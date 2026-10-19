@@ -6,6 +6,7 @@ require "tmpdir"
 require "open3"
 require "rbconfig"
 require "json"
+require "bundler"
 
 abort "Usage: ruby script/package_smoke.rb PACKAGE.gem" unless ARGV.size == 1
 package_path = File.expand_path(ARGV.first)
@@ -17,7 +18,7 @@ Dir.mktmpdir("rule-lens-package-") do |directory|
   # Dependencies are already installed by bundle install; isolate the package
   # itself so this verifies its contents rather than loading the source tree.
   spec = Gem::Installer.at(package_path, install_dir: directory, ignore_dependencies: true, document: []).install
-  environment = ENV.keys.grep(/\A(?:BUNDLE_|RUBYOPT\z|RUBYLIB\z)/).to_h { |key| [key, nil] }
+  environment = Bundler.unbundled_env
   environment["GEM_HOME"] = directory
   environment["GEM_PATH"] = ([directory] + Gem.path).join(File::PATH_SEPARATOR)
   executable = File.join(directory, "bin", "rule_lens")
@@ -27,7 +28,7 @@ Dir.mktmpdir("rule-lens-package-") do |directory|
   snapshot[:revision] = "after"
   item[:status] = "allowed"
   File.write(File.join(directory, "after.json"), JSON.generate(snapshot))
-  out, err, status = Open3.capture3(environment, RbConfig.ruby, executable, "compare", "before.json", "after.json", "--output", "report.html", "--fail-on-change", chdir: directory)
+  out, err, status = Open3.capture3(environment, RbConfig.ruby, executable, "compare", "before.json", "after.json", "--output", "report.html", "--fail-on-change", chdir: directory, unsetenv_others: true)
   raise "Installed CLI failed: #{out}\n#{err}" unless status.exitstatus == 1
   raise "Missing installed report" unless File.read(File.join(directory, "report.html"), encoding: "UTF-8").include?("1件の権限が変化")
   puts "Installed #{spec.name} #{spec.version}: CLI and HTML report OK; MIT; private journals excluded."

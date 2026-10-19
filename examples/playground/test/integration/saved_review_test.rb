@@ -7,13 +7,16 @@ require "rule_lens/snapshots"
 
 class SavedReviewTest < ActiveSupport::TestCase
   def execute(directory, *command, env: {})
-    environment = ENV.keys.grep(/\A(?:BUNDLE_|RUBYOPT\z|RUBYLIB\z)/).to_h { |key| [key, nil] }
+    # Ruby 4 may preload Bundler through BUNDLER_SETUP before running a script.
+    # Restore Gem paths as well, so a second app is not pinned to this app's
+    # vendor bundle. Pass a complete environment without mutating the parent.
+    environment = Bundler.unbundled_env
     environment["BUNDLE_GEMFILE"] = File.join(directory, "Gemfile")
     environment["RAILS_ENV"] = "test"
     environment["DATABASE_URL"] = nil
     environment["RULE_LENS_FIXTURE_ID_OFFSET"] = nil
     environment.merge!(env)
-    Open3.capture3(environment, *command, chdir: directory)
+    Open3.capture3(environment, *command, chdir: directory, unsetenv_others: true)
   end
 
   def successful(directory, *command, env: {})
