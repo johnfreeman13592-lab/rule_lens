@@ -28,7 +28,7 @@ gem "pundit", "~> 2.5"
 gem "rule_lens", github: "johnfreeman13592-lab/rule_lens", branch: "main"
 ```
 
-開発ブランチでは、次のコマンドで導入用のひな形を作れます。
+Gitから導入したRailsアプリでは、次のコマンドで導入用のひな形を作れます。
 
 ```sh
 ruby bin/rails generate rule_lens:install

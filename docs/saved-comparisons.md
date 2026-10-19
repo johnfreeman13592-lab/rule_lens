@@ -82,7 +82,7 @@ gemとしてインストールした場合の実行名は `rule_lens`。`--fail-
 
 ## Rails用のひな形を生成する（開発版）
 
-この機能は未公開の開発版。公開mainのv0.2.0にはまだ含まれない。開発版をローカルのpath指定で導入したRailsアプリでは、次のコマンドを使える。
+この機能は次回リリース向けの改善としてGitから利用できる。RubyGemsには未配布。GitHubのmainまたはローカルのpath指定で導入したRailsアプリでは、次のコマンドを使える。
 
 ```sh
 ruby bin/rails generate rule_lens:install

@@ -36,7 +36,7 @@ gem "pundit", "~> 2.5"
 gem "rule_lens", github: "johnfreeman13592-lab/rule_lens", branch: "main"
 ```
 
-Run `bundle install`. On the development branch, Rails users can scaffold a capture script:
+Run `bundle install`. Rails users installing from Git can scaffold a capture script:
 
 ```sh
 ruby bin/rails generate rule_lens:install
