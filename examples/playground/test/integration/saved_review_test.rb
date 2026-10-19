@@ -11,6 +11,9 @@ class SavedReviewTest < ActiveSupport::TestCase
     # Restore Gem paths as well, so a second app is not pinned to this app's
     # vendor bundle. Pass a complete environment without mutating the parent.
     environment = Bundler.unbundled_env
+    if (configured_path = Bundler.settings[:path])
+      environment["BUNDLE_PATH"] = File.expand_path(configured_path, Bundler.root)
+    end
     environment["BUNDLE_GEMFILE"] = File.join(directory, "Gemfile")
     environment["RAILS_ENV"] = "test"
     environment["DATABASE_URL"] = nil

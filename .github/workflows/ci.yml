@@ -35,6 +35,9 @@ jobs:
           working-directory: examples/playground
       - run: bundle install
         working-directory: examples/policy_review
+        env:
+          BUNDLE_PATH: ${{ github.workspace }}/examples/playground/vendor/bundle
+          BUNDLE_FROZEN: "true"
       - run: ruby ../../script/test_core.rb
       - run: ruby bin/rails test
       - run: ruby bin/rails zeitwerk:check
