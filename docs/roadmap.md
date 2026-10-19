@@ -16,6 +16,8 @@ The release workflow runs core tests on Ruby 3.3, 3.4 and 4.0, and the Rails sui
 
 ## Next: learn from real integrations
 
+Implemented after the MVP (unreleased): reports prioritize incomplete comparisons and permission changes, with unchanged cases in a native collapsed section. All cases and category counts remain available offline.
+
 - Reduce the effort needed to define cases and reproduce logical input data.
 - Improve report navigation based on actual review workflows.
 - Gather minimal, synthetic examples of comparisons that are difficult to review.

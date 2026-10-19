@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Group offline HTML reports into incomplete comparisons, permission changes and unchanged cases.
+- Keep unchanged cases in a collapsed, keyboard-accessible disclosure without JavaScript.
+- Show counts for each comparison category while retaining every captured case.
+
 ## 0.2.0
 
 - Optional Pundit adapter using ordinary policy classes.

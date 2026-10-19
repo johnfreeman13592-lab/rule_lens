@@ -63,6 +63,8 @@ bundle exec rule_lens compare before.json after.json --output review.html
 
 Open `review.html` directly in a browser. It contains no JavaScript or external assets. From a source checkout, the equivalent command is `ruby exe/rule_lens compare ...`.
 
+Reports show incomplete comparisons first, then permission changes. Unchanged cases remain available in a collapsed section, so a large set of unchanged results does not bury the cases to review. Expand it to inspect the full coverage.
+
 Existing output files are never overwritten. Select a new path for each run. Add `--fail-on-change` to return exit code `1` when permissions change. Invalid or incomplete comparisons return `2`, including evaluation errors, missing/added cases, changed case definitions, and empty coverage. A complete comparison otherwise returns `0`.
 
 ## Why use it with tests?

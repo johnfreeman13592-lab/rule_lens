@@ -102,6 +102,55 @@ class SnapshotsTest < Minitest::Test
     end
   end
 
+  def test_html_groups_incomplete_changes_and_unchanged_without_losing_cases
+    before = snapshot([
+      item(id: "a-unchanged"), item(id: "b-granted"), item(id: "c-revoked", status: "allowed"),
+      item(id: "d-error"), item(id: "e-removed"), item(id: "f-definition")
+    ])
+    after = snapshot([
+      item(id: "a-unchanged"), item(id: "b-granted", status: "allowed"), item(id: "c-revoked"),
+      item(id: "d-error", status: "error"), item(id: "f-definition", version: "2"), item(id: "g-added")
+    ])
+    html = RuleLens::HTMLReport.render(compare(before, after))
+    assert_includes html, "2件の権限が変化"
+    assert_includes html, "1件の評価エラー ／ 7ケース"
+    assert_includes html, "比較を完了できなかったケース（4件）"
+    assert_includes html, "権限が変わったケース（2件）"
+    assert_operator html.index('id="incomplete-cases"'), :<, html.index('id="permission-changes"')
+    assert_operator html.index('id="permission-changes"'), :<, html.index('id="unchanged-cases"')
+    details = html.match(/<details id="unchanged-cases">(.*?)<\/details>/m)[1]
+    assert_includes details, "変化なし（1件）"
+    assert_includes details, "a-unchanged"
+    refute_includes details, "d-error"
+    assert_equal 7, html.scan('<th scope="row">').size
+    ("a".."g").zip(%w[unchanged granted revoked error removed definition added]).each do |prefix, suffix|
+      assert_equal 1, html.scan("<small>#{prefix}-#{suffix}</small>").size
+    end
+  end
+
+  def test_html_keeps_errors_visible_when_case_definitions_or_coverage_change
+    before = snapshot([item(id: "changed"), item(id: "removed", status: "error")])
+    after = snapshot([item(id: "changed", version: "2", status: "error"), item(id: "added", status: "error")])
+    html = RuleLens::HTMLReport.render(compare(before, after))
+    assert_includes html, "3件の評価エラー ／ 3ケース"
+    assert_includes html, "比較を完了できなかったケース（3件）"
+    assert_equal 3, html.scan("RuntimeError").size
+    refute_includes html, '<details'
+    assert_includes html, "ケース定義変更：<strong>1</strong>件"
+    assert_includes html, "評価エラー（同一ケース定義）：<strong>0</strong>件"
+  end
+
+  def test_html_large_unchanged_reports_remain_available_in_a_closed_native_disclosure
+    cases = 200.times.map { |index| item(id: "unchanged-#{index}") }
+    html = RuleLens::HTMLReport.render(compare(snapshot(cases), snapshot(cases)))
+    assert_includes html, '<details id="unchanged-cases">'
+    assert_includes html, "変化なし（200件）"
+    assert_equal 200, html.scan('<th scope="row">').size
+    refute_includes html, 'id="incomplete-cases"'
+    refute_includes html, '<script'
+    assert_includes html, "収録された比較可能なケースに権限の変化はありません"
+  end
+
   def test_cli_writes_a_report_and_supports_a_change_gate
     with_cli(snapshot, snapshot([item(status: "allowed")], revision: "candidate")) do |args, path|
       assert_equal 1, RuleLens::CLI.run(args + ["--fail-on-change"], out: StringIO.new, err: StringIO.new)
