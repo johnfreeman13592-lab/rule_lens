@@ -1,49 +1,29 @@
-# RuleLens v0.1 設計
+# Architecture
 
-## 目的
+RuleLens compares observed Pundit permissions across explicit named cases. It does not implement authorization on behalf of your application.
 
-業務ルールの判定理由と、入力を変えたときの結果の違いを、人が確認できるようにする。
+## Capture
 
-最初のユーザーは、条件分岐を実装・確認するRuby/Rails開発者。最初の具体例は送料無料判定。
+An application-owned `RuleLens::Pundit::Case` supplies a stable ID, label, query and a setup block returning `[user, record]`. The adapter calls Pundit's public `authorize` API with your policy class. Every execution creates a new policy instance.
 
-## アーキテクチャ
+Pundit authorization failures become `denied`; setup failures, missing methods and other exceptions become `error`. Error messages and input records are not retained. A versioned JSON snapshot records outcomes with the suite, revision label, logical data version and comparison context.
 
-入力フォーム → Rails controller（型・範囲の検証）→ ShippingRules::BOOK → RuleLens::Comparison → ERB
+## Compare
 
-Ruby gemは外部依存なし。Railsサンプルはgemをpath依存で読み込む。同じルール定義で通常の判定と比較を行い、画面にルールを再実装しない。
+Capture each code revision in its own application process. The standalone comparator validates the JSON and requires matching suite, data version and context. It joins cases by ID, rather than array position or database primary key. Changed queries or case versions are marked separately from permission changes.
 
-RailsサンプルはDB・ログインなし。比較はPOSTで明示的に実行する。初版では自動送信や複雑なフロントエンドを足さない。入力値は保存しない（開発時のRailsログは通常通り出る）。
+Missing cases and evaluation errors remain visible. The comparator does not claim that incomplete comparisons are successful or infer that a new permission is necessarily a bug.
 
-## コアの責務
+## Report
 
-- Builder: ルールの定義を収集し、重複ID・空ラベルなどを拒否。
-- Rulebook: 全条件を順番に評価。入力変更前後を同じ定義で比較。
-- RuleResult: 安定したID、ラベル、合否、不合格理由。
-- Result: 全体の合否、全条件の結果、不合格一覧。
-- Comparison / Change: 各条件の合否の前後差分。
+The CLI writes an offline HTML report with escaped labels and no script or external assets. Output files are created exclusively to avoid replacing a baseline or report accidentally.
 
-結果はRubyのDataとfreezeした配列・文字列で表現する。入力はコアで変換せず、保存しない。利用側が適切な型を用意する。predicateが参照する可変な外部状態は利用側の責任。
+## Database sample
 
-## 初版の仕様
+The separate Rails sample uses Active Record and SQLite in memory. Each capture rebuilds synthetic data identified by stable fixture keys. The integration test changes database IDs between two committed policy revisions, checking that logical cases still align. This is an example fixture strategy, not automatic support for arbitrary production databases.
 
-- 全条件AND。空のルールブックは拒否。
-- 不合格になっても後続の条件を評価する。
-- ブロックはbooleanを返す。型違い・例外はEvaluationError（元例外をcauseで保持）。
-- ルールIDを表示名から分離し、差分や将来の翻訳に利用できるようにする。
-- 比較で示すのは合否の変化。因果推論、必要な入力の自動探索、最小修正案の算出はしない。
-- 全体が不合格のままでも、個々の条件が改善した場合は表示する。
-- 不合格理由は作者が明示的に記述する。任意のRuby式から説明文を自動生成しない。
+## Original rule evaluator
 
-## 今回作らないもの
+The earlier `RuleLens.define` API remains available. Its named boolean predicates evaluate all AND conditions, return explicit author-written failure reasons, and compare outcomes for different inputs. It is independent of Pundit and is not required for the authorization adapter.
 
-OR/入れ子、推論エンジン、DBへの履歴保存、画面でのルール編集、認可ライブラリの置き換え、ユーザー入力Rubyのeval、Rails Engineとしての汎用組み込み。
-
-最初からEngineにするとホストアプリの認証・権限・モデル入力・バージョン互換まで設計する必要がある。まず独立したgemとサンプルで使い勝手を確かめる。
-
-## 拡張前に検証したいこと
-
-1. 本当に理由を知りたい具体例が、送料無料以外にもあるか。
-2. 既存のvalidation/認可ライブラリと比べ、前後比較画面に価値があるか。
-3. 別アプリから使ったときに、入力の定義がどれだけ負担になるか。
-
-この回答を得てから、入力スキーマ、Rails Engine、既存ライブラリのアダプターを検討する。
+See [capture and comparison details](saved-comparisons.md) and the [roadmap](roadmap.md).

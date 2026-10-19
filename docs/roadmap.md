@@ -1,27 +1,31 @@
-# 開発ロードマップ
+# Roadmap
 
-## v0.1 — 最初の比較体験
+## v0.2.0 MVP
 
-- [x] 名前付きルールのDSL
-- [x] 全条件評価・不合格理由
-- [x] 入力変更前後の比較
-- [x] 送料無料のRailsサンプル
-- [x] 不正入力・境界値・例外のテスト
-- [x] 起動方法・設計ドキュメント
-- [x] GitHub Actionsの定義
+- [x] Compare ordinary Pundit policy classes with named cases.
+- [x] Capture separate application processes into versioned JSON.
+- [x] Match stable case IDs and check comparison conditions.
+- [x] Distinguish permission changes, case changes and evaluation failures.
+- [x] Generate an offline HTML report with the comparison CLI.
+- [x] Provide an interactive Rails demo.
+- [x] Validate a separate Rails application with Active Record and SQLite fixtures.
+- [x] Test repeat captures and different physical database IDs across two Git commits.
+- [x] Add English/Japanese documentation and the MIT license.
 
-## 次に試す
+The release workflow runs core tests on Ruby 3.3, 3.4 and 4.0, and the Rails suite on Linux and Windows. See [Actions](https://github.com/johnfreeman13592-lab/rule_lens/actions) for actual results.
 
-- [ ] 実際に使って、分かりにくい文言やAPIを直す
-- [ ] 招待特典やクーポン適用など、別の小さな例を追加
-- [ ] よく使う入力パターンをプリセットとして選択
-- [ ] 必要なら比較結果のJSON出力
+## Next: learn from real integrations
 
-## 公開準備
+- Reduce the effort needed to define cases and reproduce logical input data.
+- Improve report navigation based on actual review workflows.
+- Gather minimal, synthetic examples of comparisons that are difficult to review.
+- Evaluate database fixture strategies beyond the included SQLite example.
 
-- [ ] ライセンス決定・LICENSE更新
-- [ ] RubyGems名の重複確認（rule_lensは仮の名前）
-- [ ] サポート対象RubyでのCI結果確認
-- [ ] READMEの英語版・デモ画像
-- [ ] 別のRailsアプリから利用して導入手順を検証
-- [ ] privateからpublicへの切り替え・パッケージ公開は別途判断
+## Later candidates
+
+- Pundit Scope comparisons: which records become visible or disappear.
+- Reuse reviewed cases as regression tests.
+- Case generation within explicit input constraints.
+- Additional authorization adapters after the Pundit workflow proves useful.
+
+Automatic Git checkout, production data collection, arbitrary code sandboxing and automatic permission fixes are outside the MVP. RubyGems distribution is a separate future step; source installation from Git is supported.

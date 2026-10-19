@@ -1,95 +1,103 @@
 # RuleLens
 
-Explain and compare business rule outcomes in plain Ruby.
+**See who gains or loses permission when your Pundit policies change.**
 
-Rubyで書いた条件について、**合否・不合格の理由・入力変更による合否の変化**を確認する、小さなルール評価ライブラリです。Railsの実験画面を同梱しています。
+[日本語](README.ja.md) · [![CI](https://github.com/johnfreeman13592-lab/rule_lens/actions/workflows/ci.yml/badge.svg)](https://github.com/johnfreeman13592-lab/rule_lens/actions/workflows/ci.yml)
 
-現在は private 開発中の v0.1.0 プロトタイプです。RubyGemsには未公開です。
+RuleLens runs named permission cases against your existing Pundit policies, saves the results, and compares two code revisions in an offline HTML report.
 
-## 最初の体験
+| Case | Before | After | Change |
+| --- | --- | --- | --- |
+| Author edits their article | Allowed | Allowed | Unchanged |
+| Editor edits an article | Denied | Allowed | Granted — intended |
+| Reader edits an article | Denied | Allowed | Granted — review this |
 
-「国内配送」「注文金額5,000円以上」という送料無料の条件について、4,000円から5,000円に変えると、どの条件が変わるかを比べられます。画面は日本語です。
+This is an early **v0.2.0 MVP**. It compares the cases you supply; it does not prove that your application is secure. Scope comparisons and automatic Git checkout are not included.
+
+## Try the interactive demo
+
+Use Ruby 4.0 for the sample Rails app (development: Ruby 4.0.7 / Rails 8.1.4 / Pundit 2.5.2).
 
 ```sh
-cd examples/playground
+git clone https://github.com/johnfreeman13592-lab/rule_lens.git
+cd rule_lens/examples/playground
 bundle install
-bin/rails server -b 127.0.0.1 -p 3100
+ruby bin/rails server -b 127.0.0.1 -p 3100
 ```
 
-ブラウザで http://127.0.0.1:3100 を開いてください。DB、ログイン、Node.js、外部APIは不要です。開発用の `.ruby-version` はRuby 4.0.7です（gem本体はRuby 3.2以上）。実装時の動作確認環境はRuby 4.0.7 / Rails 8.1.4です。
+Open [localhost:3100](http://127.0.0.1:3100/). Choose an intended change, an accidental permission grant, or an evaluation error. The demo uses 12 cases, with Japanese labels. No database, sign-in, Node.js, or external API is needed. The earlier shipping-rule demo is at `/shipping`.
 
-## Rubyで使う
+## Use your own policies
 
-ルートで `bundle install` したあと、`bundle exec ruby -Ilib` などで読み込めます。別アプリからは `gem "rule_lens", path: "/path/to/rule_lens"` を指定してください。
+RuleLens is not published on RubyGems. Add it from Git, alongside Pundit:
 
 ```ruby
-require "rule_lens"
+gem "pundit", "~> 2.5"
+gem "rule_lens", github: "johnfreeman13592-lab/rule_lens", branch: "main"
+```
 
-shipping = RuleLens.define("送料無料") do
-  rule :domestic, label: "配送先が国内", reason: "国内配送のみ対象です" do |order|
-    order.fetch(:destination) == "domestic"
-  end
+Run `bundle install`. In a development/test process after loading your application:
 
-  rule :minimum, label: "5,000円以上", reason: "注文金額を5,000円以上にしてください" do |order|
-    order.fetch(:amount) >= 5000
-  end
-end
+```ruby
+require "rule_lens/pundit"
 
-result = shipping.evaluate(destination: "domestic", amount: 4000)
-result.passed?                       # => false
-result.failures.map(&:reason)        # => ["注文金額を5,000円以上にしてください"]
-result.to_h                         # JSONへ変換できる判定データ
+cases = [
+  RuleLens::Pundit::Case.new(
+    id: "reader.update", label: "Reader edits an article", query: :update?
+  ) { [User.find_by!(fixture_key: "reader"), Article.find_by!(fixture_key: "article")] }
+]
 
-comparison = shipping.compare(
-  before: { destination: "domestic", amount: 4000 },
-  after:  { destination: "domestic", amount: 5000 }
+snapshot = RuleLens::Pundit.capture(
+  cases: cases, policy: ArticlePolicy,
+  suite: "article-permissions", revision: "your-commit-sha",
+  data_version: "fixtures-v1"
 )
-comparison.changes.map(&:id)         # => [:minimum]
-comparison.after.passed?             # => true
+snapshot.write("before.json")
 ```
 
-## 判定の契約
-
-- 全条件を評価し、すべて `true` のときだけ全体が合格します（ANDのみ）。
-- ルールIDは重複しないSymbol。ラベルと不合格理由は空でないStringです。
-- 判定ブロックは `true` / `false` を返します。`nil` などは判定エラーです。
-- 例外は `RuleLens::EvaluationError` に包み、`rule_id` と `cause` を保持します。業務上の不合格には変換しません。
-- 比較の「変化」は各条件の合否の変化です。入力値だけが変わっても合否が同じなら変化なしです。
-- 判定結果とルール一覧は変更不可。入力は保持しません。呼び出し側の入力オブジェクトを複製する機能はありません。
-- ブロックは副作用なしで書いてください。DB更新・メール送信などは行わず、比較に必要な時刻や外部データも入力として渡してください。
-- 定義は開発者が管理する信頼済みRubyコードです。利用者が投稿したRubyコードを実行する仕組みではありません。
-
-## 構成
-
-```text
-lib/rule_lens/          Railsに依存しない判定・比較処理
-  rulebook.rb          DSL・評価処理・エラー
-  result.rb            変更不可の結果オブジェクト
-  version.rb           バージョン
-examples/playground/   DB不要のRailsサンプル画面
-  app/models/shipping_rules.rb   サンプルのルール定義
-  app/controllers/              入力の検証と評価の呼び出し
-  app/views/                    フォーム・結果・差分
-test/                 gemの契約を確認するテスト
-docs/                 設計・開発計画
-```
-
-## テスト
+The `fixture_key` fields are an example: replace these lookups with your app's fixtures or factories. Each setup block must produce equivalent inputs without side effects. Capture `after.json` in a separate process running the other code revision, with the same cases and logical test data. The revision label is supplied by you; RuleLens does not verify it against Git.
 
 ```sh
-# gemの単体テスト
-bundle exec rake
-
-# Rails画面のリクエスト・描画テスト
-cd examples/playground
-bundle exec rails test
-bundle exec rails zeitwerk:check
+bundle exec rule_lens compare before.json after.json --output review.html
 ```
 
-CIではgemのRuby 3.3 / 3.4 / 4.0と、Ruby 4.0でのRailsサンプルを検証する構成です。ローカル検証結果とCIの実行結果は別です。
+Open `review.html` directly in a browser. It contains no JavaScript or external assets. From a source checkout, the equivalent command is `ruby exe/rule_lens compare ...`.
 
-## 次の開発
+Existing output files are never overwritten. Select a new path for each run. Add `--fail-on-change` to return exit code `1` when permissions change. Invalid or incomplete comparisons return `2`, including evaluation errors, missing/added cases, changed case definitions, and empty coverage. A complete comparison otherwise returns `0`.
 
-[設計とスコープ](docs/design.md) / [ロードマップ](docs/roadmap.md)
+## Why use it with tests?
 
-最初は一つの定義と比較体験を磨きます。公開前にOSSライセンスとgem名の利用可否を確定し、RubyGemsへの配布を検討します。
+Tests assert what should be permitted. RuleLens presents the observed permission changes across your named cases for review. It uses ordinary Pundit policy classes, records evaluation failures separately from denials, and flags case changes rather than silently comparing unrelated inputs.
+
+The [SQLite sample](examples/policy_review/README.md) recreates logical fixtures in a fresh in-memory database for each process. Its integration test uses two real Git commits and different database IDs to verify that only the permission changes are reported.
+
+## Development
+
+The core targets Ruby 3.2+, with a CI matrix for Ruby 3.3 / 3.4 / 4.0. Rails samples target Ruby 4.0 / Rails 8.1.4. Pundit is optional unless you load the adapter. SQLite is only needed for the database sample.
+
+```sh
+bundle install
+ruby script/test_core.rb
+cd examples/policy_review
+bundle install
+cd ../playground
+bundle install
+ruby bin/rails test
+ruby bin/rails zeitwerk:check
+```
+
+On Windows paths containing non-ASCII characters, use `ruby bin/rails` and `ruby script/test_core.rb`; `bundle exec` may corrupt the path when restarting Ruby. CI tests both Linux and Windows for the Rails samples.
+
+## Documentation
+
+- [Architecture](docs/design.md)
+- [Capture format, comparison conditions and CLI](docs/saved-comparisons.md)
+- [Interactive demo](docs/pundit-demo.md)
+- [Roadmap](docs/roadmap.md)
+- [Contributing](CONTRIBUTING.md) / [Security](SECURITY.md)
+
+The original plain-Ruby rule evaluation API remains available through `require "rule_lens"`.
+
+## License
+
+[MIT](LICENSE).

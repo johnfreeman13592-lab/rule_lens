@@ -1,0 +1,57 @@
+<header class="topbar">
+  <%= link_to "◈ RuleLens", root_path, class: "brand" %>
+  <%= link_to "送料無料の旧デモ", shipping_path %>
+</header>
+<main>
+  <div class="intro">
+    <p class="eyebrow">PUNDIT POLICY COMPARISON</p>
+    <h1>その変更で、誰が何をできる？</h1>
+    <p class="lead">記事の本人だけが編集できるブログに、編集者の権限を追加します。<br>同じ人・記事・操作で、変更前と変更後の結果を見比べましょう。</p>
+  </div>
+  <section class="panel" aria-labelledby="version-title">
+    <h2 id="version-title">どんな変更を比べますか？</h2>
+    <% if @error %><p class="error" role="alert"><%= @error %></p><% end %>
+    <%= form_with url: root_path, method: :get, local: true do %>
+      <%= label_tag :version, "変更後のルール" %>
+      <%= select_tag :version, options_for_select(BlogDemo::VERSIONS.map { |id, (label, _)| [label, id] }, @version) %>
+      <%= submit_tag "権限の変化を見る", class: "primary" %>
+    <% end %>
+    <p class="muted">今回の予定：編集者に編集を許可する。一般の読者と未ログインの人には許可しない。</p>
+  </section>
+  <% if @report %>
+    <section class="panel policy-results" aria-labelledby="comparison-title">
+      <div class="panel-head"><h2 id="comparison-title">権限の変更一覧</h2><span class="tag"><%= @report.rows.size %> CASES</span></div>
+      <p class="policy-summary"><strong><%= @report.changes.size %>件の権限が変化</strong> ／ <%= @report.errors.size %>件の評価エラー</p>
+      <% if @report.errors.any? %><p class="error" role="alert">判定に失敗したケースがあります。拒否されたという意味ではなく、この比較は一部未完了です。</p><% end %>
+      <p class="muted">許可が増えたこと自体が間違いとは限りません。予定した変更かどうか、ケースごとに確認してください。</p>
+      <div class="table-scroll"><table class="policy-table">
+        <caption class="sr-only">ブログの操作について変更前後の権限を比較</caption>
+        <thead><tr><th scope="col">誰が・何をする？</th><th scope="col">変更前</th><th scope="col">変更後</th><th scope="col">変化</th><th scope="col">詳細</th></tr></thead>
+        <tbody>
+          <% @report.rows.each do |row| %>
+            <tr class="policy-row <%= row.kind %>" data-case-id="<%= row.id %>">
+              <th scope="row"><%= row.label %></th>
+              <% [row.before, row.after].each do |decision| %>
+                <td class="decision <%= decision.status %>"><%= decision_label(decision) %></td>
+              <% end %>
+              <td><span class="change-badge"><%= change_label(row) %></span></td>
+              <td><details><summary><span class="sr-only"><%= row.label %>の</span>詳細</summary>
+                <p>対象：公開記事「はじめてのRails」</p>
+                <p>確認する操作：<code><%= row.query %></code><br>ケース：<code><%= row.id %></code></p>
+                <% [row.before, row.after].each_with_index do |decision, index| %>
+                  <% if decision.error? %><p><%= index.zero? ? "変更前" : "変更後" %>の評価エラー：<code><%= decision.error_class %></code></p><% end %>
+                <% end %>
+              </details></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table></div>
+      <p class="footnote">この表は、用意した12ケースの結果です。アプリ全体の安全性を保証するものではありません。</p>
+    </section>
+    <section class="panel definition" aria-labelledby="policy-source-title">
+      <div><p class="eyebrow">ORDINARY RUBY POLICIES</p><h2 id="policy-source-title">同じケースで、二つのポリシーを実行。</h2><p class="muted">このデモはアプリ内の旧・新ポリシーを比較します。Gitの二つの版を比較する機能は今後の開発です。</p><p>正しい変更と変更ミスを切り替えて、読者の「編集」がどう変わるかを確認してください。</p></div>
+      <details><summary>サンプルのRubyコードを見る</summary><pre><code><%= File.read(Rails.root.join("app/models/blog_demo.rb"), encoding: "UTF-8") %></code></pre></details>
+    </section>
+  <% end %>
+  <footer>RuleLens <span>権限の変化を、レビューできる形に。</span></footer>
+</main>

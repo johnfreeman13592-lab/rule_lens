@@ -2,7 +2,7 @@ require "test_helper"
 
 class PlaygroundTest < ActionDispatch::IntegrationTest
   def test_default_comparison
-    get root_path
+    get shipping_path
     assert_response :success
     assert_select "h1", "その判定の、理由が見える。"
     assert_select "tr.changed", count: 1

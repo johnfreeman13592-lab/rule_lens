@@ -1,12 +1,14 @@
 PATH
   remote: .
   specs:
-    rule_lens (0.1.0)
+    rule_lens (0.2.0)
+      json (>= 2.6, < 4)
 
 GEM
   remote: https://rubygems.org/
   specs:
     drb (2.2.3)
+    json (3.0.2)
     minitest (6.0.6)
       drb (~> 2.0)
       prism (~> 1.5)
@@ -16,6 +18,7 @@ GEM
 PLATFORMS
   arm64-darwin-25
   ruby
+  x64-mingw-ucrt
 
 DEPENDENCIES
   minitest (>= 5.20, < 7)
@@ -24,10 +27,11 @@ DEPENDENCIES
 
 CHECKSUMS
   drb (2.2.3) sha256=0b00d6fdb50995fe4a45dea13663493c841112e4068656854646f418fda13373
+  json (3.0.2) sha256=8e6d7e7b11384c21230430cef90b71f14849a34a1f4452796670f7c981bd19df
   minitest (6.0.6) sha256=153ea36d1d987a62942382b61075745042a2b3123b1cd48f4c3675af9cc7d6f1
   prism (1.9.0) sha256=7b530c6a9f92c24300014919c9dcbc055bf4cdf51ec30aed099b06cd6674ef85
   rake (13.4.2) sha256=cb825b2bd5f1f8e91ca37bddb4b9aaf345551b4731da62949be002fa89283701
-  rule_lens (0.1.0)
+  rule_lens (0.2.0)
 
 BUNDLED WITH
   4.0.20

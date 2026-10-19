@@ -16,8 +16,12 @@ jobs:
           bundler-cache: true
       - run: bundle exec rake
       - run: gem build rule_lens.gemspec
+      - run: ruby script/package_smoke.rb rule_lens-0.2.0.gem
   playground:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     defaults:
       run:
         working-directory: examples/playground
@@ -28,5 +32,8 @@ jobs:
           ruby-version: '4.0'
           bundler-cache: true
           working-directory: examples/playground
-      - run: bundle exec rails test
-      - run: bundle exec rails zeitwerk:check
+      - run: bundle install
+        working-directory: examples/policy_review
+      - run: ruby ../../script/test_core.rb
+      - run: ruby bin/rails test
+      - run: ruby bin/rails zeitwerk:check

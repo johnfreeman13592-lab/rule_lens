@@ -298,6 +298,21 @@ footer {
 .table-scroll {
   overflow-x:auto;
 }
+.policy-results { margin-top:22px; }
+.policy-table { font-size:13px; }
+.policy-summary { margin:20px 0 8px; }
+.policy-row.granted { background:#edf6ee; }
+.policy-row.revoked { background:#fff5e9; }
+.policy-row.error { background:#fff0ed; }
+.decision { white-space:nowrap; font-weight:650; }
+.decision.allowed { color:#256c4b; }
+.decision.denied { color:#64746c; }
+.decision.error { color:#9a392b; border:0; }
+.change-badge { white-space:nowrap; }
+details { min-width:100px; }
+summary { cursor:pointer; color:var(--green); }
+details p { max-width:260px; font-size:12px; }
+summary:focus-visible { outline:3px solid #82ad91; outline-offset:3px; }
 @media(max-width:820px) {
   .workspace,.definition {
     grid-template-columns:1fr;
