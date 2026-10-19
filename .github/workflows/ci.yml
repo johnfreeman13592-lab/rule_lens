@@ -19,6 +19,8 @@ jobs:
       - run: ruby script/package_smoke.rb rule_lens-0.2.0.gem
   playground:
     runs-on: ${{ matrix.os }}
+    env:
+      BUNDLE_PATH: ${{ github.workspace }}/examples/playground/vendor/bundle
     strategy:
       fail-fast: false
       matrix:
@@ -36,7 +38,6 @@ jobs:
       - run: bundle install
         working-directory: examples/policy_review
         env:
-          BUNDLE_PATH: ${{ github.workspace }}/examples/playground/vendor/bundle
           BUNDLE_FROZEN: "true"
       - run: ruby ../../script/test_core.rb
       - run: ruby bin/rails test
