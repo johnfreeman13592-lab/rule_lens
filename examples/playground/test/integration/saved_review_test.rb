@@ -33,8 +33,8 @@ class SavedReviewTest < ActiveSupport::TestCase
       File.write(lockfile, File.read(lockfile, encoding: "UTF-8").sub('  remote: ../..', "  remote: #{repo_root}"), encoding: "UTF-8")
 
       [{ "DATABASE_URL" => "sqlite3:must-not-connect.sqlite3" }, { "RAILS_ENV" => "production" }].each do |unsafe_environment|
-        _, _, rejected = execute(directory, RbConfig.ruby, "script/capture.rb", "blocked.json", "unsafe", env: unsafe_environment)
-        assert_equal 2, rejected.exitstatus
+        rejected_out, rejected_err, rejected = execute(directory, RbConfig.ruby, "script/capture.rb", "blocked.json", "unsafe", env: unsafe_environment)
+        assert_equal 2, rejected.exitstatus, "Guard process failed before rejection: #{rejected_out}\n#{rejected_err}"
         refute File.exist?(File.join(directory, "blocked.json"))
         refute File.exist?(File.join(directory, "must-not-connect.sqlite3"))
       end
