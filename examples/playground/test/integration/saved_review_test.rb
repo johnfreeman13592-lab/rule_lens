@@ -4,29 +4,10 @@ require "tmpdir"
 require "fileutils"
 require "rbconfig"
 require "rule_lens/snapshots"
+require_relative "../../../../test/support/application_process_helper"
 
 class SavedReviewTest < ActiveSupport::TestCase
-  def execute(directory, *command, env: {})
-    # Ruby 4 may preload Bundler through BUNDLER_SETUP before running a script.
-    # Restore Gem paths as well, so a second app is not pinned to this app's
-    # vendor bundle. Pass a complete environment without mutating the parent.
-    environment = Bundler.unbundled_env
-    if (configured_path = Bundler.settings[:path])
-      environment["BUNDLE_PATH"] = File.expand_path(configured_path, Bundler.root)
-    end
-    environment["BUNDLE_GEMFILE"] = File.join(directory, "Gemfile")
-    environment["RAILS_ENV"] = "test"
-    environment["DATABASE_URL"] = nil
-    environment["RULE_LENS_FIXTURE_ID_OFFSET"] = nil
-    environment.merge!(env)
-    Open3.capture3(environment, *command, chdir: directory, unsetenv_others: true)
-  end
-
-  def successful(directory, *command, env: {})
-    out, err, status = execute(directory, *command, env: env)
-    assert status.success?, "#{command.first} failed (#{status.exitstatus}): #{out}\n#{err}"
-    out.strip
-  end
+  include ApplicationProcessHelper
 
   def with_review_app
     repo_root = Rails.root.join("../..").expand_path.to_s.tr("\\", "/")

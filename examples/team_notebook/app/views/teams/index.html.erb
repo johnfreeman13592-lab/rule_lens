@@ -1,0 +1,13 @@
+<p class="eyebrow">チームを選ぶ</p>
+<h1><%= current_user.name %>のノートブック</h1>
+<p>役割はチームごとに異なります。「はる」はチームAでは編集者、チームBでは一般メンバーです。</p>
+<div class="team-grid">
+  <% @teams.each do |team| %>
+    <section class="card">
+      <span class="badge"><%= role_label(current_user.memberships.find_by!(team: team).role) %></span>
+      <h2><%= team.name %></h2>
+      <p>公開記事と、自分の権限で見られる非公開記事を確認できます。</p>
+      <%= link_to "記事一覧へ →", team_articles_path(team), class: "primary-link" %>
+    </section>
+  <% end %>
+</div>

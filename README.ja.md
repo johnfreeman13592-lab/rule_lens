@@ -19,6 +19,8 @@ ruby bin/rails server -b 127.0.0.1 -p 3100
 
 Ruby 4.0が必要です。ブラウザで http://127.0.0.1:3100/ を開き、「予定どおり」「読者にも許可してしまう変更ミス」「評価エラー」を切り替えてみてください。4種類の人物と3操作、合計12ケースを比較します。DB・ログイン・Node.js・外部APIは不要です。以前の送料無料デモは `/shipping` です。
 
+一通りの導入を試すなら、[Team Notebookの試用ガイド](docs/trial-guide.md)へ。チームごとに役割が違う記事アプリをブラウザで操作し、実際にRubyコードを変更して152件の権限ケースと8件のScopeケースを比較します。別チームへの誤った許可を発見するところまで試せます。このアプリとScope用ジェネレーターはローカル実装済みで、公開mainへの反映待ちです。認証を省いた開発・テスト専用デモで、画面の編集内容と収録用の固定データは分かれています。
+
 ## 自分のRailsアプリで使う
 
 RubyGemsには未配布です。Gemfileに追加して `bundle install` します。
@@ -73,6 +75,7 @@ bundle exec rule_lens compare before.json after.json --output review.html
 
 ## 次に読む
 
+- [Team Notebookで導入・画面操作・コード変更・比較を試す](docs/trial-guide.md)
 - [Scope比較の計画・使い方](docs/scope-comparisons.md)
 - [SQLiteのDBを使う別Railsアプリ](examples/policy_review/README.md)
 - [保存形式・CLI・入力をそろえる条件](docs/saved-comparisons.md)

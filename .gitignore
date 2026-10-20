@@ -13,3 +13,5 @@
 # Local journals; public documentation is listed explicitly in the gemspec.
 /docs/development-plan.md
 /docs/implementation-status.md
+/examples/team_notebook/storage/*.sqlite3*
+/examples/team_notebook/public/rule-lens-reports/

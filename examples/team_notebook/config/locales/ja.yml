@@ -1,0 +1,14 @@
+ja:
+  errors:
+    format: "%{attribute}%{message}"
+    messages:
+      blank: "を入力してください"
+      taken: "はすでに使われています"
+      inclusion: "を正しく指定してください"
+      required: "を指定してください"
+  activerecord:
+    attributes:
+      article:
+        title: "タイトル"
+        body: "本文"
+        author: "作者"

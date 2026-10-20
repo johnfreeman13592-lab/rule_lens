@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add Team Notebook, a separate Japanese Rails integration trial with team-specific Pundit roles, browser CRUD and isolated fixed capture data.
+- Verify three actual Git revisions, 152 permission cases and eight Scope cases, including an accidental permission expansion across teams; add a trial guide and Linux/Windows CI jobs.
 - Add `rails generate rule_lens:install --scope` for separate Scope case configuration and a test-only capture script.
 - Add explicit Pundit Scope capture and `scope-compare` for stable-key visibility changes, with an independent JSON kind and offline HTML report.
 - Support multiple Pundit policy groups in a single capture, validating case IDs across the whole snapshot before evaluation.

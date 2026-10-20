@@ -1,0 +1,10 @@
+<%= form_with model: [current_team, @article], class: "editor" do |form| %>
+  <% if @article.errors.any? %><div class="errors" role="alert"><ul><% @article.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul></div><% end %>
+  <%= form.label :title, "タイトル" %>
+  <%= form.text_field :title, required: true %>
+  <%= form.label :body, "本文" %>
+  <%= form.text_area :body, rows: 10, required: true %>
+  <label class="checkbox"><%= form.check_box :published %> チームのメンバー全員に公開する</label>
+  <p class="muted">非公開の記事は、作者と閲覧権限を持つ人だけが読めます。</p>
+  <%= form.submit "保存する" %>
+<% end %>

@@ -51,6 +51,25 @@ All 59 local tests pass. CI covers Ruby 3.3 / 3.4 / 4.0 and Rails on Linux / Win
 
 Local follow-up, not yet on public main: `rails generate rule_lens:install --scope` creates separate Scope configuration and capture files, so application setup no longer requires copying a capture script by hand. It preserves existing files and leaves data preparation to the application. See [the setup guide](scope-comparisons.md#scope用のひな形未公開の開発版).
 
+## Team Notebook integration trial — local implementation complete
+
+See [the reproducible trial guide](trial-guide.md). This milestone and the Scope generator follow-up await publication approval; they are not yet on public main.
+
+- [x] Add an independent Japanese Rails app with per-team membership roles, article CRUD and demo actor switching.
+- [x] Enforce team boundaries and ownership on direct URLs as well as the UI; reject production environments and external database URLs.
+- [x] Keep browser SQLite data separate from in-memory capture fixtures, with non-overwriting initial seeds.
+- [x] Use the existing generators and public APIs for 152 permission cases and eight Scope cases.
+- [x] Verify baseline, intended and buggy Ruby code in three temporary Git commits, with separate capture processes and actual revision SHAs.
+- [x] Confirm the exact intended grants (five permissions, two visible keys) and accidental extra grants (three permissions, one visible key).
+- [x] Confirm repeat captures with different physical IDs, CLI exit codes, HTML reports and untouched persistent databases.
+- [x] Exercise browser CRUD and both code changes; restore the demo to baseline afterward.
+- [x] Preserve the original examples and add Linux/Windows CI configuration for the new app.
+- [ ] After explicit approval, push the reviewed local changes, verify all remote CI jobs, then update main.
+
+Local Windows verification: core 28 tests / 234 assertions, original Rails suite 32 / 326, Team Notebook 12 / 379; all pass (72 tests / 939 assertions total). Both Rails Zeitwerk checks and installed-gem permission/Scope CLI checks pass. The new remote Linux/Windows jobs have not run yet.
+
+The trial showed that application-owned reproducible data and logical keys are still necessary after generation. The guide supplies a reusable starting point for the user's future Rails app. This is self-trial evidence with synthetic data, not external-user adoption. Reviewed-diff management, existing-test integration and case generation remain undecided future work.
+
 ## Later candidates
 
 These are candidates, not an agreed implementation checklist. Choose the next milestone before expanding scope. The remaining trial work requires an actual application and feedback; synthetic integration tests do not establish real-user adoption or repeat use.

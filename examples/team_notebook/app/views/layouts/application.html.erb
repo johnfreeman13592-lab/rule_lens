@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <title>Team Notebook — RuleLens導入検証</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= stylesheet_link_tag "application" %>
+  </head>
+  <body>
+    <header class="topbar">
+      <div><%= link_to "Team Notebook", root_path, class: "brand" %><span class="badge">ローカル検証用デモ</span></div>
+      <%= form_with url: demo_session_path, class: "actor-picker" do |form| %>
+        <%= form.label :actor_slug, "操作する人物" %>
+        <%= form.select :actor_slug, User.order(:id).map { |actor| [actor.name, actor.slug] }, selected: current_user.slug %>
+        <%= form.submit "切り替える" %>
+      <% end %>
+    </header>
+    <main>
+      <% if notice %><p class="notice" role="status"><%= notice %></p><% end %>
+      <%= yield %>
+    </main>
+    <footer>アカウント認証を省いた検証用アプリです。人物を切り替えて、チームごとの権限を試せます。<br>RuleLensの比較は専用の固定テストデータを使用します。画面での編集内容は収録されません。</footer>
+  </body>
+</html>

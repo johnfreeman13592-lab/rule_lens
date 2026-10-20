@@ -27,6 +27,8 @@ ruby bin/rails server -b 127.0.0.1 -p 3100
 
 Open [localhost:3100](http://127.0.0.1:3100/). Choose an intended change, an accidental permission grant, or an evaluation error. The demo uses 12 cases, with Japanese labels. No database, sign-in, Node.js, or external API is needed. The earlier shipping-rule demo is at `/shipping`.
 
+For a complete integration trial, use [Team Notebook](docs/trial-guide.md): a separate Japanese Rails article app with team-specific roles, SQLite and browser CRUD. Edit real policy code, capture 152 permission cases and eight Scope cases, then review an accidental grant in another team. This trial and the Scope generator are implemented locally and await publication to main. Its fixed capture data is separate from articles edited in the browser; it is a development/test demo without account authentication.
+
 ## Use your own policies
 
 RuleLens is not published on RubyGems. Add it from Git, alongside Pundit:
@@ -98,12 +100,18 @@ cd ../playground
 bundle install
 ruby bin/rails test
 ruby bin/rails zeitwerk:check
+cd ../team_notebook
+bundle install
+ruby bin/rails db:prepare
+ruby bin/rails test
+ruby bin/rails zeitwerk:check
 ```
 
 On Windows paths containing non-ASCII characters, use `ruby bin/rails` and `ruby script/test_core.rb`; `bundle exec` may corrupt the path when restarting Ruby. CI tests both Linux and Windows for the Rails samples.
 
 ## Documentation
 
+- [Team Notebook: browser operations, real code changes and comparison](docs/trial-guide.md)
 - [Scope comparison: capture visible records and review added/removed keys](docs/scope-comparisons.md)
 - [Architecture](docs/design.md)
 - [Capture format, comparison conditions and CLI](docs/saved-comparisons.md)

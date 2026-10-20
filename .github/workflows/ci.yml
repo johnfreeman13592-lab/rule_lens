@@ -42,3 +42,24 @@ jobs:
       - run: ruby ../../script/test_core.rb
       - run: ruby bin/rails test
       - run: ruby bin/rails zeitwerk:check
+  team-notebook:
+    runs-on: ${{ matrix.os }}
+    env:
+      BUNDLE_PATH: ${{ github.workspace }}/examples/team_notebook/vendor/bundle
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    defaults:
+      run:
+        working-directory: examples/team_notebook
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '4.0'
+          bundler-cache: true
+          working-directory: examples/team_notebook
+      - run: ruby bin/rails db:prepare
+      - run: ruby bin/rails test
+      - run: ruby bin/rails zeitwerk:check

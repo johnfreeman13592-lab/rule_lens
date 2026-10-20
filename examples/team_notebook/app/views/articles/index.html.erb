@@ -1,0 +1,15 @@
+<%= link_to "← チームを選び直す", root_path %>
+<p class="eyebrow"><%= current_team.name %> / <%= role_label(current_user.memberships.find_by!(team: current_team).role) %></p>
+<div class="heading-row"><h1>記事一覧</h1><%= link_to "記事を書く", new_team_article_path(current_team), class: "primary-link" %></div>
+<p>いま見られる記事は<%= @articles.size %>件です。編集できる記事には編集リンクが表示されます。</p>
+<div class="article-list">
+  <% @articles.each do |article| %>
+    <article class="card" data-record-key="<%= article.record_key %>">
+      <span class="badge"><%= article.published? ? "公開" : "非公開" %></span>
+      <h2><%= link_to article.title, [current_team, article] %></h2>
+      <p class="muted">作者：<%= article.author.name %></p>
+      <% if policy(article).update? %><%= link_to "編集する", edit_team_article_path(current_team, article) %><% end %>
+    </article>
+  <% end %>
+</div>
+<% if @articles.empty? %><section class="card">いま見られる記事はありません。</section><% end %>

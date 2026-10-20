@@ -1,0 +1,11 @@
+<%= link_to "← 記事一覧", team_articles_path(current_team) %>
+<section class="card article-body">
+  <span class="badge"><%= @article.published? ? "公開" : "非公開" %></span>
+  <h1><%= @article.title %></h1>
+  <p class="muted"><%= current_team.name %> / 作者：<%= @article.author.name %></p>
+  <%= simple_format(h(@article.body)) %>
+  <div class="actions">
+    <% if policy(@article).update? %><%= link_to "編集する", edit_team_article_path(current_team, @article), class: "primary-link" %><% end %>
+    <% if policy(@article).destroy? %><%= button_to "この記事を削除する", [current_team, @article], method: :delete, class: "danger" %><% end %>
+  </div>
+</section>
