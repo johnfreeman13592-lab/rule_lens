@@ -46,6 +46,24 @@ ruby bin/rails generate rule_lens:install
 ruby script/rule_lens_capture.rb before.json YOUR_BASELINE_REVISION
 ```
 
+Start with two cases using the [first comparison guide (Japanese)](docs/first-comparison.md). The Team Notebook example checks whether Haru can edit an administrator's private article in each of two teams: an intended change grants one case, while a global-role bug grants the other. Replace the example's user, record, policy and data preparation with your application's equivalents. A minimal configuration is:
+
+```ruby
+module RuleLensCapture
+  def self.options
+    prepare_reproducible_test_data # Your app owns this; fixtures are not loaded automatically.
+    { suite: "articles", data_version: "fixtures-v1", policy: ArticlePolicy,
+      cases: [RuleLens::Pundit::Case.new(id: "reader.update", label: "Reader edits", query: :update?) {
+        [find_test_reader, find_test_article]
+      }] }
+  end
+end
+```
+
+`prepare_reproducible_test_data`, `find_test_reader` and `find_test_article` are application-owned placeholders. Run preparation separately in each capture process. Use `bundle binstubs rule_lens`, then `ruby bin/rule_lens compare ...` to launch the comparison from your app, including on Windows paths containing non-ASCII characters.
+
+Local development improves generated capture diagnostics: failures identify the startup/configuration/data preparation stage or list up to ten failed case IDs and exception classes with the saved JSON path. Exception messages and input objects are omitted. Existing generated scripts are preserved; review and manually merge template changes to update them.
+
 The generated script runs only in `test`, rejects `DATABASE_URL`, and refuses empty cases. Check your test database configuration and prepare reproducible fixtures or factories yourself; it does not create, reset or migrate databases. Existing generated files are skipped, including with `--force`. See the [setup guide](docs/saved-comparisons.md#rails用のひな形を生成する開発版).
 
 Use `ruby bin/rails generate rule_lens:install --scope` for separate Scope capture files. See the [Scope setup guide](docs/scope-comparisons.md#scope用のひな形).

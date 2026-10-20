@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add a two-case Rails onboarding guide, with application-owned fixture preparation, separate-process captures and a Scope follow-up.
+- Improve capture script diagnostics with failure stages, bounded escaped case IDs and exception classes, recovery hints and preflight output checks; preserve customized generated files.
 - Add Team Notebook, a separate Japanese Rails integration trial with team-specific Pundit roles, browser CRUD and isolated fixed capture data.
 - Verify three actual Git revisions, 152 permission cases and eight Scope cases, including an accidental permission expansion across teams; add a trial guide and Linux/Windows CI jobs.
 - Add `rails generate rule_lens:install --scope` for separate Scope case configuration and a test-only capture script.

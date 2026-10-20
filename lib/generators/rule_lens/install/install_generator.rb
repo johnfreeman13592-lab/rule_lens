@@ -29,6 +29,8 @@ module RuleLens
           say "Then run: ruby script/rule_lens_capture.rb before.json YOUR_REVISION"
         end
         say "The script only runs in test, rejects DATABASE_URL, and never prepares or resets your database."
+        say "First comparison guide: https://github.com/johnfreeman13592-lab/rule_lens/blob/main/docs/first-comparison.md"
+        say "Existing files are skipped, even with --force. To update a customized script, review the template diff and merge it manually."
       end
     end
   end

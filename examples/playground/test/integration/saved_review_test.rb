@@ -75,6 +75,41 @@ class SavedReviewTest < ActiveSupport::TestCase
     end
   end
 
+  test "minimal database samples report preparation and evaluation failures and preserve existing outputs" do
+    with_review_app do |directory, _|
+      [["capture", "review_cases", "author.show?"], ["capture_scope", "review_scope_cases", "author.articles"]].each do |script, model, id|
+        _, error, status = execute(directory, RbConfig.ruby, "script/#{script}.rb", "#{script}-bad-data.json", "failed", env: { "RULE_LENS_FIXTURE_ID_OFFSET" => "private-invalid-offset" })
+        assert_equal 2, status.exitstatus
+        assert_includes error, "data preparation"
+        assert_includes error, "ArgumentError"
+        refute_includes error, "private-invalid-offset"
+        refute File.exist?(File.join(directory, "#{script}-bad-data.json"))
+        model_path = File.join(directory, "app/models/#{model}.rb")
+        source = File.read(model_path, encoding: "UTF-8")
+        File.write(model_path, source.gsub('ReviewUser.find_by!(fixture_key: actor)', 'ReviewUser.find_by!(fixture_key: "missing-private-actor")'), encoding: "UTF-8")
+        _, error, status = execute(directory, RbConfig.ruby, "script/#{script}.rb", "#{script}-errors.json", "failed")
+        assert_equal 2, status.exitstatus
+        assert_includes error, id
+        assert_includes error, "ActiveRecord::RecordNotFound"
+        assert_includes error, "#{script}-errors.json"
+        refute_includes error, "missing-private-actor"
+        assert JSON.parse(File.read(File.join(directory, "#{script}-errors.json")))["cases"].all? { |item| item["status"] == "error" }
+        File.write(model_path, source, encoding: "UTF-8")
+        successful(directory, RbConfig.ruby, "script/#{script}.rb", "#{script}-fixed.json", "fixed")
+        environment = File.join(directory, "config/environment.rb")
+        original = File.binread(environment)
+        File.write(environment, "raise 'must not boot'\n")
+        previous = File.binread(File.join(directory, "#{script}-fixed.json"))
+        _, error, status = execute(directory, RbConfig.ruby, "script/#{script}.rb", "#{script}-fixed.json", "overwrite")
+        assert_equal 2, status.exitstatus
+        assert_includes error, "Choose a new output filename"
+        refute_includes error, "must not boot"
+        assert_equal previous, File.binread(File.join(directory, "#{script}-fixed.json"))
+        File.binwrite(environment, original)
+      end
+    end
+  end
+
   test "discovered install generator produces a usable capture and preserves existing files" do
     require "rails/generators"
     with_review_app do |directory, repo_root|

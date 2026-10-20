@@ -71,6 +71,8 @@ Gitの自動操作や本番データの取り込み、複数Scopeクラスを一
 
 ## Scope用のひな形
 
+最初の設定例と復旧の仕方は[初回導入ガイド](first-comparison.md#5-次にscopeを2ケースで試す)を参照。権限比較からScopeへ進む手順を説明する。
+
 Gitから導入する版では、収録処理を手でコピーする代わりに `--scope` オプションでScope用のひな形を生成できる。
 
 この追加改善はcore 28テスト・Rails 32テストの計60テストでローカル検証済み。生成ファイルからの収録・比較、通常モードとの併用、再生成と既存出力の保持を確認した。リモートCIの結果は[Actions](https://github.com/johnfreeman13592-lab/rule_lens/actions)を参照。

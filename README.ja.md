@@ -23,6 +23,8 @@ Ruby 4.0が必要です。ブラウザで http://127.0.0.1:3100/ を開き、「
 
 ## 自分のRailsアプリで使う
 
+まずは[2ケースから始める導入ガイド](docs/first-comparison.md)で、設定・データ準備・最初の収録・失敗からの復旧を確認できます。Team Notebookを具体例にし、自分のアプリで置き換える部分も説明します。
+
 RubyGemsには未配布です。Gemfileに追加して `bundle install` します。
 
 ```ruby
@@ -41,6 +43,8 @@ ruby script/rule_lens_capture.rb before.json 変更前のコード版
 収録スクリプトはtest環境専用で、`DATABASE_URL` の指定とケース未設定を拒否します。テスト用DBの接続先を確認し、テストデータを利用側で用意してください。DB作成・初期化・マイグレーションは行いません。既存ファイルは `--force` 付きでも上書きしません。[詳しい設定手順](docs/saved-comparisons.md#rails用のひな形を生成する開発版)を参照してください。
 
 `ruby bin/rails generate rule_lens:install --scope` で、Scope専用の設定・収録ファイルも生成できます。[Scope用の設定手順](docs/scope-comparisons.md#scope用のひな形)を参照してください。
+
+ローカル開発版では、収録に失敗した段階やケースID・例外クラスを表示し、直す場所を案内します。生成済みスクリプトは再生成で更新されないため、生成元との差分を確認して手動で取り込んでください。
 
 ライブラリを直接使う場合は、アプリを読み込んだ開発・テスト用プロセスで確認ケースを指定します。入力は同じ論理データになるよう、fixtures（固定のテストデータ）やfactory（テストデータを作る処理）で用意します。
 

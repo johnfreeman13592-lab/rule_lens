@@ -69,6 +69,21 @@ Local Windows verification: core 28 tests / 234 assertions, original Rails suite
 
 The trial showed that application-owned reproducible data and logical keys are still necessary after generation. The guide supplies a reusable starting point for the user's future Rails app. This is self-trial evidence with synthetic data, not external-user adoption. Reviewed-diff management, existing-test integration and case generation remain undecided future work.
 
+## First comparison onboarding — local implementation
+
+See [the two-case first comparison guide](first-comparison.md). This follow-up is local and has not been pushed; remote CI and publication follow explicit approval.
+
+- [x] Explain app-owned data preparation, users, records and existing policies with two permission cases, followed by two Scope cases.
+- [x] Generate recovery hints for unset configuration, Rails boot, configuration loading, options/data preparation, capture and output failures.
+- [x] List at most ten escaped failed case IDs and exception classes, with the remaining count and saved JSON path; omit exception messages and input objects.
+- [x] Preserve customized generated files, check output collisions before boot and retain exclusive writes.
+- [x] Validate fresh generation through the actual Rails CLI, three real Git commits, the guide's literal configuration examples and recovery without changing persistent databases.
+- [x] Retain the existing library APIs, snapshot formats and comparison CLI; update generated sample scripts and minimal database examples.
+
+The existing Linux/Windows Rails CI jobs automatically include these integration tests. This is synthetic self-trial evidence; the user's own Rails app and external-user feedback remain future opportunities to validate the workflow.
+
+Local Windows results: core 28 tests / 234 assertions, playground 33 / 376, Team Notebook 15 / 742; all pass (76 tests / 1,352 assertions). Both Zeitwerk checks and installed-gem CLI checks pass. The new remote CI run awaits publication approval.
+
 ## Later candidates
 
 These are candidates, not an agreed implementation checklist. Choose the next milestone before expanding scope. The remaining trial work requires an actual application and feedback; synthetic integration tests do not establish real-user adoption or repeat use.
