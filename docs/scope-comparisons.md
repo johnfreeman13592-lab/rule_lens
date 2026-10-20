@@ -68,3 +68,51 @@ ruby exe/rule_lens scope-compare scope-before.json scope-after.json --output sco
 統合テストでは同じコードを物理IDの異なるDBで繰り返し収録し、JSONが一致することを確認する。その後、Scopeのバグを入れて別プロセスで収録し、意図しない閲覧追加とHTML・CLI終了コードを検証する。Scope判定そのものはアプリのRubyコードとして実行するため、外部作用を安全に取り消す機能ではない。
 
 Gitの自動操作や本番データの取り込み、複数Scopeクラスを一括指定する仕組みは初版の範囲外。生成済みの通常の権限収録スクリプトとは別に、このAPIを呼ぶScope収録処理を用意する。
+
+## Scope用のひな形（未公開の開発版）
+
+ローカル開発ブランチでは、収録処理を手でコピーする代わりにScope用のひな形を生成できる。この `--scope` オプションは公開mainには未反映。
+
+この追加改善はcore 28テスト・Rails 32テストの計60テストでローカル検証済み。生成ファイルからの収録・比較、通常モードとの併用、再生成と既存出力の保持を確認した。今回のリモートCIは未実行。
+
+```sh
+ruby bin/rails generate rule_lens:install --scope
+```
+
+| ファイル | 設定内容 |
+| --- | --- |
+| `config/rule_lens_scope_cases.rb` | `RuleLensScopeCapture.options` にScopeクラス、ケース、キー抽出処理、データ版と比較条件を指定する |
+| `script/rule_lens_scope_capture.rb` | 出力先とコード版を渡して実行する |
+
+初期状態はScopeクラスとケースが未設定なので、実行してもJSONを作らず終了コード2になる。以下の形でアプリに合う設定へ変更する。テスト用DB接続先と同じ論理データの準備は利用者が管理する。例の `fixture_key` 列は必須ではなく、安定した論理キーを使うための一例。
+
+```ruby
+module RuleLensScopeCapture
+  def self.options
+    # このプロセスで使うテストデータをアプリの方法で用意する。
+    {
+      suite: "article-visibility", data_version: "fixtures-v1",
+      scope_class: ArticlePolicy::Scope,
+      cases: [
+        RuleLens::Pundit::ScopeCase.new(
+          id: "reader.articles", label: "読者の記事一覧",
+          key: ->(article) { article.fixture_key }
+        ) { [User.find_by!(fixture_key: "reader"), Article.all] }
+      ]
+    }
+  end
+end
+```
+
+```sh
+ruby script/rule_lens_scope_capture.rb scope-before.json BASELINE_REVISION
+# 別のコード版・別のプロセスで、等価なテストデータから収録する
+ruby script/rule_lens_scope_capture.rb scope-after.json CANDIDATE_REVISION
+bundle exec rule_lens scope-compare scope-before.json scope-after.json --output scope-review.html --fail-on-change
+```
+
+生成したスクリプトはtest環境専用で、`RAILS_ENV` 未指定ならtestを使う。test以外の指定や `DATABASE_URL` があれば、Railsを起動する前に拒否する。DBを作成・リセット・移行せず、fixturesも自動では読み込まない。
+
+通常の権限比較のひな形とはファイル名・設定モジュールを分けているので併用できる。どちらのモードも、既存ファイルは `--force` 付きでも上書きしない。既存JSONも上書きしない。再生成は、すでに編集したひな形を更新する仕組みではない。
+
+エラーのない収録は0、ケース未設定・不正な設定・既存出力・評価エラーは2で終了する。評価エラーが起きた場合は、例外メッセージを含まないエラー結果のJSONを保存する。正常に0レコードを返したケースも、確認ケース自体が設定されていれば収録できる。

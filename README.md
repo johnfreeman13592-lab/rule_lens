@@ -46,6 +46,8 @@ ruby script/rule_lens_capture.rb before.json YOUR_BASELINE_REVISION
 
 The generated script runs only in `test`, rejects `DATABASE_URL`, and refuses empty cases. Check your test database configuration and prepare reproducible fixtures or factories yourself; it does not create, reset or migrate databases. Existing generated files are skipped, including with `--force`. See the [setup guide](docs/saved-comparisons.md#rails用のひな形を生成する開発版).
 
+Local development also adds `ruby bin/rails generate rule_lens:install --scope` for separate Scope capture files. This option is not yet on public main; see the [Scope setup guide](docs/scope-comparisons.md#scope用のひな形未公開の開発版).
+
 You can also use the library directly in a development/test process after loading your application:
 
 ```ruby

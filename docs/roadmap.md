@@ -49,6 +49,8 @@ See [the scope plan, API and verification](scope-comparisons.md).
 
 All 59 local tests pass. CI covers Ruby 3.3 / 3.4 / 4.0 and Rails on Linux / Windows; see [Actions](https://github.com/johnfreeman13592-lab/rule_lens/actions) for current results. Source installation from Git includes Scope comparison.
 
+Local follow-up, not yet on public main: `rails generate rule_lens:install --scope` creates separate Scope configuration and capture files, so application setup no longer requires copying a capture script by hand. It preserves existing files and leaves data preparation to the application. See [the setup guide](scope-comparisons.md#scope用のひな形未公開の開発版).
+
 ## Later candidates
 
 These are candidates, not an agreed implementation checklist. Choose the next milestone before expanding scope. The remaining trial work requires an actual application and feedback; synthetic integration tests do not establish real-user adoption or repeat use.

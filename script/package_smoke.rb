@@ -13,7 +13,7 @@ package_path = File.expand_path(ARGV.first)
 package = Gem::Package.new(package_path)
 raise "Unexpected license" unless package.spec.license == "MIT"
 raise "Private journal included" unless package.contents.grep(/development-plan|implementation-status/).empty?
-%w[install_generator.rb templates/cases.rb templates/capture.rb].each do |file|
+%w[install_generator.rb templates/cases.rb templates/capture.rb templates/scope_cases.rb templates/scope_capture.rb].each do |file|
   raise "Missing Rails generator file: #{file}" unless package.contents.include?("lib/generators/rule_lens/install/#{file}")
 end
 

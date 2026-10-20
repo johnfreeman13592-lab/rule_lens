@@ -220,4 +220,77 @@ class SavedReviewTest < ActiveSupport::TestCase
       end
     end
   end
+
+  test "scope install generates a separate usable workflow and preserves customized files" do
+    require "rails/generators"
+    require "rule_lens/scope_snapshots"
+    with_review_app do |directory, repo_root|
+      capture_io { Rails::Generators.invoke("rule_lens:install", ["--scope"], destination_root: directory) }
+      config = File.join(directory, "config/rule_lens_scope_cases.rb")
+      script = File.join(directory, "script/rule_lens_scope_capture.rb")
+      assert File.file?(config)
+      assert File.file?(script)
+      refute File.exist?(File.join(directory, "config/rule_lens_cases.rb"))
+      refute File.exist?(File.join(directory, "script/rule_lens_capture.rb"))
+
+      _, error, result = execute(directory, RbConfig.ruby, "script/rule_lens_scope_capture.rb", "empty.json", "base")
+      assert_equal 2, result.exitstatus
+      assert_includes error, "Configure at least one Scope case"
+      refute File.exist?(File.join(directory, "empty.json"))
+
+      configured = File.read(config, encoding: "UTF-8")
+        .sub("def self.options", "def self.options\n    ReviewData.prepare")
+        .sub("scope_class: nil", "scope_class: ArticlePolicy::Scope")
+        .sub("cases: []", "cases: ReviewScopeCases.build")
+      File.write(config, configured, encoding: "UTF-8")
+      customized_script = File.binread(script) + "\n# Local customization\n"
+      File.binwrite(script, customized_script)
+      capture_io { Rails::Generators.invoke("rule_lens:install", ["--scope", "--force"], destination_root: directory) }
+      assert_equal configured, File.read(config, encoding: "UTF-8")
+      assert_equal customized_script, File.binread(script)
+      capture_io { Rails::Generators.invoke("rule_lens:install", [], destination_root: directory) }
+      assert File.file?(File.join(directory, "config/rule_lens_cases.rb"))
+      assert_equal configured, File.read(config, encoding: "UTF-8")
+      assert_equal customized_script, File.binread(script)
+
+      File.write(config, "raise 'configuration must not load'", encoding: "UTF-8")
+      [{ "RAILS_ENV" => "production" }, { "DATABASE_URL" => "sqlite3:blocked-scope.sqlite3" }].each do |environment|
+        _, error, result = execute(directory, RbConfig.ruby, "script/rule_lens_scope_capture.rb", "blocked.json", "base", env: environment)
+        assert_equal 2, result.exitstatus
+        assert_includes error, "Run in test"
+        refute File.exist?(File.join(directory, "blocked.json"))
+        refute File.exist?(File.join(directory, "blocked-scope.sqlite3"))
+      end
+      File.write(config, configured, encoding: "UTF-8")
+
+      output = successful(directory, RbConfig.ruby, "script/rule_lens_scope_capture.rb", "generated-scope-before.json", "base")
+      assert_includes output, "Saved 2 scope cases (0 errors)"
+      before_path = File.join(directory, "generated-scope-before.json")
+      before = RuleLens::ScopeSnapshots::Snapshot.load(before_path)
+      assert_equal "pundit_scope", before.data["kind"]
+      assert_equal %w[public reader-private], before.data["cases"].find { |item| item["id"] == "reader.articles" }["keys"]
+      original = File.binread(before_path)
+      _, _, result = execute(directory, RbConfig.ruby, "script/rule_lens_scope_capture.rb", "generated-scope-before.json", "other")
+      assert_equal 2, result.exitstatus
+      assert_equal original, File.binread(before_path)
+
+      policy_path = File.join(directory, "app/policies/article_policy.rb")
+      File.write(policy_path, File.read(policy_path).sub('@scope.where(published: true).or(@scope.where(author_id: @user.id))', '@scope.all'))
+      successful(directory, RbConfig.ruby, "script/rule_lens_scope_capture.rb", "generated-scope-after.json", "candidate")
+      _, error, result = execute(directory, RbConfig.ruby, File.join(repo_root, "exe/rule_lens"), "scope-compare",
+        "generated-scope-before.json", "generated-scope-after.json", "--output", "generated-scope-review.html", "--fail-on-change")
+      assert_equal 1, result.exitstatus, error
+      assert_includes File.read(File.join(directory, "generated-scope-review.html"), encoding: "UTF-8"), "2ケースの閲覧範囲が変化"
+
+      broken = configured.sub("scope_class: ArticlePolicy::Scope", "scope_class: Class.new { def initialize(*); end; def resolve; raise 'private record'; end }")
+      File.write(config, broken, encoding: "UTF-8")
+      output, _, result = execute(directory, RbConfig.ruby, "script/rule_lens_scope_capture.rb", "scope-errors.json", "candidate")
+      assert_equal 2, result.exitstatus
+      assert_includes output, "2 errors"
+      errors = RuleLens::ScopeSnapshots::Snapshot.load(File.join(directory, "scope-errors.json"))
+      assert_equal ["error"], errors.data["cases"].map { |item| item["status"] }.uniq
+      assert errors.data["cases"].all? { |item| item["keys"].empty? }
+      refute_includes errors.to_json, "private record"
+    end
+  end
 end
