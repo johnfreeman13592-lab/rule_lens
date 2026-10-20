@@ -69,11 +69,11 @@ ruby exe/rule_lens scope-compare scope-before.json scope-after.json --output sco
 
 Gitの自動操作や本番データの取り込み、複数Scopeクラスを一括指定する仕組みは初版の範囲外。生成済みの通常の権限収録スクリプトとは別に、このAPIを呼ぶScope収録処理を用意する。
 
-## Scope用のひな形（未公開の開発版）
+## Scope用のひな形
 
-ローカル開発ブランチでは、収録処理を手でコピーする代わりにScope用のひな形を生成できる。この `--scope` オプションは公開mainには未反映。
+Gitから導入する版では、収録処理を手でコピーする代わりに `--scope` オプションでScope用のひな形を生成できる。
 
-この追加改善はcore 28テスト・Rails 32テストの計60テストでローカル検証済み。生成ファイルからの収録・比較、通常モードとの併用、再生成と既存出力の保持を確認した。今回のリモートCIは未実行。
+この追加改善はcore 28テスト・Rails 32テストの計60テストでローカル検証済み。生成ファイルからの収録・比較、通常モードとの併用、再生成と既存出力の保持を確認した。リモートCIの結果は[Actions](https://github.com/johnfreeman13592-lab/rule_lens/actions)を参照。
 
 ```sh
 ruby bin/rails generate rule_lens:install --scope

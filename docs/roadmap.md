@@ -49,11 +49,11 @@ See [the scope plan, API and verification](scope-comparisons.md).
 
 All 59 local tests pass. CI covers Ruby 3.3 / 3.4 / 4.0 and Rails on Linux / Windows; see [Actions](https://github.com/johnfreeman13592-lab/rule_lens/actions) for current results. Source installation from Git includes Scope comparison.
 
-Local follow-up, not yet on public main: `rails generate rule_lens:install --scope` creates separate Scope configuration and capture files, so application setup no longer requires copying a capture script by hand. It preserves existing files and leaves data preparation to the application. See [the setup guide](scope-comparisons.md#scope用のひな形未公開の開発版).
+The follow-up `rails generate rule_lens:install --scope` creates separate Scope configuration and capture files, so application setup no longer requires copying a capture script by hand. It preserves existing files and leaves data preparation to the application. See [the setup guide](scope-comparisons.md#scope用のひな形).
 
-## Team Notebook integration trial — local implementation complete
+## Team Notebook integration trial — implementation complete
 
-See [the reproducible trial guide](trial-guide.md). This milestone and the Scope generator follow-up await publication approval; they are not yet on public main.
+See [the reproducible trial guide](trial-guide.md). The sample and Scope generator are included in this source checkout. RubyGems distribution remains a separate step.
 
 - [x] Add an independent Japanese Rails app with per-team membership roles, article CRUD and demo actor switching.
 - [x] Enforce team boundaries and ownership on direct URLs as well as the UI; reject production environments and external database URLs.
@@ -64,9 +64,8 @@ See [the reproducible trial guide](trial-guide.md). This milestone and the Scope
 - [x] Confirm repeat captures with different physical IDs, CLI exit codes, HTML reports and untouched persistent databases.
 - [x] Exercise browser CRUD and both code changes; restore the demo to baseline afterward.
 - [x] Preserve the original examples and add Linux/Windows CI configuration for the new app.
-- [ ] After explicit approval, push the reviewed local changes, verify all remote CI jobs, then update main.
 
-Local Windows verification: core 28 tests / 234 assertions, original Rails suite 32 / 326, Team Notebook 12 / 379; all pass (72 tests / 939 assertions total). Both Rails Zeitwerk checks and installed-gem permission/Scope CLI checks pass. The new remote Linux/Windows jobs have not run yet.
+Local Windows verification: core 28 tests / 234 assertions, original Rails suite 32 / 326, Team Notebook 12 / 379; all pass (72 tests / 939 assertions total). Both Rails Zeitwerk checks and installed-gem permission/Scope CLI checks pass. CI includes Linux/Windows jobs for the new sample; see [Actions](https://github.com/johnfreeman13592-lab/rule_lens/actions) for actual remote results.
 
 The trial showed that application-owned reproducible data and logical keys are still necessary after generation. The guide supplies a reusable starting point for the user's future Rails app. This is self-trial evidence with synthetic data, not external-user adoption. Reviewed-diff management, existing-test integration and case generation remain undecided future work.
 

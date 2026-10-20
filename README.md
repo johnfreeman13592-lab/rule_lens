@@ -27,7 +27,7 @@ ruby bin/rails server -b 127.0.0.1 -p 3100
 
 Open [localhost:3100](http://127.0.0.1:3100/). Choose an intended change, an accidental permission grant, or an evaluation error. The demo uses 12 cases, with Japanese labels. No database, sign-in, Node.js, or external API is needed. The earlier shipping-rule demo is at `/shipping`.
 
-For a complete integration trial, use [Team Notebook](docs/trial-guide.md): a separate Japanese Rails article app with team-specific roles, SQLite and browser CRUD. Edit real policy code, capture 152 permission cases and eight Scope cases, then review an accidental grant in another team. This trial and the Scope generator are implemented locally and await publication to main. Its fixed capture data is separate from articles edited in the browser; it is a development/test demo without account authentication.
+For a complete integration trial, use [Team Notebook](docs/trial-guide.md): a separate Japanese Rails article app with team-specific roles, SQLite and browser CRUD. Edit real policy code, capture 152 permission cases and eight Scope cases, then review an accidental grant in another team. The trial is included in this source checkout. Its fixed capture data is separate from articles edited in the browser; it is a development/test demo without account authentication.
 
 ## Use your own policies
 
@@ -48,7 +48,7 @@ ruby script/rule_lens_capture.rb before.json YOUR_BASELINE_REVISION
 
 The generated script runs only in `test`, rejects `DATABASE_URL`, and refuses empty cases. Check your test database configuration and prepare reproducible fixtures or factories yourself; it does not create, reset or migrate databases. Existing generated files are skipped, including with `--force`. See the [setup guide](docs/saved-comparisons.md#rails用のひな形を生成する開発版).
 
-Local development also adds `ruby bin/rails generate rule_lens:install --scope` for separate Scope capture files. This option is not yet on public main; see the [Scope setup guide](docs/scope-comparisons.md#scope用のひな形未公開の開発版).
+Use `ruby bin/rails generate rule_lens:install --scope` for separate Scope capture files. See the [Scope setup guide](docs/scope-comparisons.md#scope用のひな形).
 
 You can also use the library directly in a development/test process after loading your application:
 
