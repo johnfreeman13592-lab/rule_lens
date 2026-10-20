@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.license = "MIT"
   spec.files = Dir["lib/**/*.rb", "exe/*"] + %w[
     README.md README.ja.md LICENSE CHANGELOG.md CONTRIBUTING.md SECURITY.md
-    docs/design.md docs/roadmap.md docs/pundit-demo.md docs/saved-comparisons.md
+    docs/design.md docs/roadmap.md docs/pundit-demo.md docs/saved-comparisons.md docs/scope-comparisons.md
   ]
   spec.bindir = "exe"
   spec.executables = ["rule_lens"]

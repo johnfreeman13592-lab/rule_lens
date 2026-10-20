@@ -14,6 +14,7 @@ module ReviewData
         add_index :review_users, :fixture_key, unique: true
         create_table :review_articles do |table|
           table.string :fixture_key, null: false
+          table.boolean :published, null: false, default: false
           table.references :author, null: false, foreign_key: { to_table: :review_users }
         end
         add_index :review_articles, :fixture_key, unique: true
@@ -23,5 +24,7 @@ module ReviewData
       ReviewUser.create!(id: offset + index + 1, fixture_key: key, role: key)
     end
     ReviewArticle.create!(id: offset + 10, fixture_key: "article", author: ReviewUser.find_by!(fixture_key: "author"))
+    ReviewArticle.create!(id: offset + 11, fixture_key: "public", published: true, author: ReviewUser.find_by!(fixture_key: "author"))
+    ReviewArticle.create!(id: offset + 12, fixture_key: "reader-private", author: ReviewUser.find_by!(fixture_key: "reader"))
   end
 end

@@ -36,11 +36,23 @@ Local development, not yet on public main: capture multiple policy groups into o
 - Gather minimal, synthetic examples of comparisons that are difficult to review.
 - Evaluate database fixture strategies beyond the included SQLite example.
 
+## Scope comparison milestone — local implementation complete
+
+The user selected this milestone after the MVP. See [the plan, API and verification](scope-comparisons.md).
+
+- [x] Capture an explicit Pundit Scope with stable per-record keys.
+- [x] Store independent, bounded JSON outcomes and distinguish empty results from errors.
+- [x] Compare visible-key additions/removals without inferring from incomplete cases.
+- [x] Generate an offline HTML report with `scope-compare`.
+- [x] Verify different physical database IDs and accidental private-article exposure in separate Rails processes.
+- [x] Preserve the existing permission API and reject mixed snapshot types.
+
+All 59 local tests pass. This feature is not yet on public main; remote CI for it has not run.
+
 ## Later candidates
 
 These are candidates, not an agreed implementation checklist. Choose the next milestone before expanding scope. The remaining trial work requires an actual application and feedback; synthetic integration tests do not establish real-user adoption or repeat use.
 
-- Pundit Scope comparisons: which records become visible or disappear.
 - Reuse reviewed cases as regression tests.
 - Case generation within explicit input constraints.
 - Additional authorization adapters after the Pundit workflow proves useful.

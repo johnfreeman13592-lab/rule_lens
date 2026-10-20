@@ -182,4 +182,42 @@ class SavedReviewTest < ActiveSupport::TestCase
       assert_equal 9, html.scan('<th scope="row">').size
     end
   end
+
+  test "scope captures use stable database keys across processes and detect private record exposure" do
+    require "rule_lens/scope_snapshots"
+    with_review_app do |directory, repo_root|
+      [{ "RAILS_ENV" => "production" }, { "DATABASE_URL" => "sqlite3:blocked.sqlite3" }].each do |environment|
+        _, _, result = execute(directory, RbConfig.ruby, "script/capture_scope.rb", "blocked.json", "base", env: environment)
+        assert_equal 2, result.exitstatus
+        refute File.exist?(File.join(directory, "blocked.json"))
+        refute File.exist?(File.join(directory, "blocked.sqlite3"))
+      end
+      successful(directory, RbConfig.ruby, "script/capture_scope.rb", "scope-before.json", "base")
+      successful(directory, RbConfig.ruby, "script/capture_scope.rb", "scope-repeat.json", "base", env: { "RULE_LENS_FIXTURE_ID_OFFSET" => "100" })
+      assert_equal File.binread(File.join(directory, "scope-before.json")), File.binread(File.join(directory, "scope-repeat.json"))
+      before = RuleLens::ScopeSnapshots::Snapshot.load(File.join(directory, "scope-before.json"))
+      assert_equal %w[public reader-private], before.data["cases"].find { |item| item["id"] == "reader.articles" }["keys"]
+
+      policy = File.join(directory, "app/policies/article_policy.rb")
+      File.write(policy, File.read(policy).sub('@scope.where(published: true).or(@scope.where(author_id: @user.id))', '@scope.all'))
+      successful(directory, RbConfig.ruby, "script/capture_scope.rb", "scope-after.json", "candidate", env: { "RULE_LENS_FIXTURE_ID_OFFSET" => "200" })
+      after = RuleLens::ScopeSnapshots::Snapshot.load(File.join(directory, "scope-after.json"))
+      report = RuleLens::ScopeSnapshots.compare(before: before, after: after)
+      assert_equal ["article"], report.rows.find { |row| row.id == "reader.articles" }.added_keys
+      assert_equal ["reader-private"], report.rows.find { |row| row.id == "author.articles" }.added_keys
+      assert_equal 2, report.changes.size
+      assert_empty report.errors
+      _, error, result = execute(directory, RbConfig.ruby, File.join(repo_root, "exe/rule_lens"), "scope-compare", "scope-before.json", "scope-after.json", "--output", "scope-review.html", "--fail-on-change")
+      assert_equal 1, result.exitstatus, error
+      html = File.read(File.join(directory, "scope-review.html"), encoding: "UTF-8")
+      assert_includes html, "2ケースの閲覧範囲が変化"
+      assert_includes html, "<code>article</code>"
+      if (artifacts = ENV["RULE_LENS_SCOPE_ARTIFACTS"])
+        FileUtils.mkdir_p(artifacts)
+        %w[scope-before.json scope-after.json scope-review.html].each do |name|
+          File.open(File.join(artifacts, name), "wbx") { |file| file.write(File.binread(File.join(directory, name))) }
+        end
+      end
+    end
+  end
 end

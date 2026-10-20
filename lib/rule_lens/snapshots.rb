@@ -126,8 +126,8 @@ module RuleLens
     end
 
     def self.compare(before:, after:)
-      unless [before, after].all? { |item| item.is_a?(Snapshot) }
-        raise ArgumentError, "expected two Snapshots"
+      unless [before, after].all? { |item| item.is_a?(Snapshot) && !item.data.key?("kind") }
+        raise ArgumentError, "expected two permission Snapshots"
       end
       %w[suite data_version context].each do |key|
         unless before.data[key] == after.data[key]

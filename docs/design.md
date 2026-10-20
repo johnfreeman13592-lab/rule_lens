@@ -22,6 +22,10 @@ Missing cases and evaluation errors remain visible. The comparator does not clai
 
 The CLI writes an offline HTML report with escaped labels and no script or external assets. Output files are created exclusively to avoid replacing a baseline or report accidentally.
 
+## Scope comparison (local development)
+
+Scope captures store sorted stable record keys instead of boolean permissions. `ScopeSnapshots::Snapshot` reuses the bounded JSON reader and immutable storage but validates a separate `kind: "pundit_scope"` schema. Both the library and CLI reject mixing scope and permission snapshots. A Scope case evaluates a fresh explicit Scope class, and key extraction/duplicate/limit errors discard partial keys. Unmatched or changed case definitions do not imply membership additions or removals. See [the scope plan](scope-comparisons.md).
+
 ## Database sample
 
 The separate Rails sample uses Active Record and SQLite in memory. Each capture rebuilds synthetic data identified by stable fixture keys. The integration test changes database IDs between two committed policy revisions, checking that logical cases still align. This is an example fixture strategy, not automatic support for arbitrary production databases.

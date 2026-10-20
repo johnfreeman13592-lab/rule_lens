@@ -26,6 +26,14 @@ ruby ../../exe/rule_lens compare before.json after.json --output review.html
 
 [保存形式・CLI・比較条件の詳細](../../docs/saved-comparisons.md)
 
+## Scope比較のサンプル（ローカル開発版）
+
+`ruby script/capture_scope.rb scope-before.json baseline` で、公開記事と自分の記事を返す `ArticlePolicy::Scope` を収録できる。`ReviewScopeCases` は本人と読者を確認し、DBの連番ではなく `fixture_key` を対応キーにする。Scopeで取得順序が変わってもキー集合を比較する。
+
+`resolve` を `@scope.all` に変更して `scope-after.json` を収録すると、本人から読者の非公開記事が、読者から本人の非公開記事が見える変化を確認できる。比較は `ruby ../../exe/rule_lens scope-compare scope-before.json scope-after.json --output scope-review.html --fail-on-change`。このコード変更は意図的なバグであり、本番向けの認可設定ではない。
+
+test専用・DATABASE_URL拒否の条件は従来のサンプルと同じ。既存ファイルは上書きしない。[保存形式・限界・Scope API](../../docs/scope-comparisons.md)も参照する。
+
 ## 複数ポリシーの収録例（ローカル開発版）
 
 `ReviewCases.groups` は、従来の記事6ケースと、`ProfilePolicy` で本人・編集者・読者が本人のプロフィールを編集できるかの3ケースを返す。既存の `script/capture.rb` は単一ポリシー6ケースのまま維持する。

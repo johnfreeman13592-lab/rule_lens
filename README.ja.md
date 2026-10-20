@@ -71,6 +71,7 @@ bundle exec rule_lens compare before.json after.json --output review.html
 
 ## 次に読む
 
+- [Scope比較の計画・使い方（ローカル開発版）](docs/scope-comparisons.md)
 - [SQLiteのDBを使う別Railsアプリ](examples/policy_review/README.md)
 - [保存形式・CLI・入力をそろえる条件](docs/saved-comparisons.md)
 - [試作APIと画面の説明](docs/pundit-demo.md)

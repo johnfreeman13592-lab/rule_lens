@@ -102,6 +102,7 @@ On Windows paths containing non-ASCII characters, use `ruby bin/rails` and `ruby
 
 ## Documentation
 
+- [Scope comparison: local development milestone](docs/scope-comparisons.md)
 - [Architecture](docs/design.md)
 - [Capture format, comparison conditions and CLI](docs/saved-comparisons.md)
 - [Interactive demo](docs/pundit-demo.md)
