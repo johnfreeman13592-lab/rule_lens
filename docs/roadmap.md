@@ -69,9 +69,9 @@ Local Windows verification: core 28 tests / 234 assertions, original Rails suite
 
 The trial showed that application-owned reproducible data and logical keys are still necessary after generation. The guide supplies a reusable starting point for the user's future Rails app. This is self-trial evidence with synthetic data, not external-user adoption. Reviewed-diff management, existing-test integration and case generation remain undecided future work.
 
-## First comparison onboarding — local implementation
+## First comparison onboarding — implementation complete
 
-See [the two-case first comparison guide](first-comparison.md). This follow-up is local and has not been pushed; remote CI and publication follow explicit approval.
+See [the two-case first comparison guide](first-comparison.md). The guide and improved generated capture diagnostics are included in this source checkout. RubyGems distribution remains a separate step.
 
 - [x] Explain app-owned data preparation, users, records and existing policies with two permission cases, followed by two Scope cases.
 - [x] Generate recovery hints for unset configuration, Rails boot, configuration loading, options/data preparation, capture and output failures.
@@ -82,7 +82,7 @@ See [the two-case first comparison guide](first-comparison.md). This follow-up i
 
 The existing Linux/Windows Rails CI jobs automatically include these integration tests. This is synthetic self-trial evidence; the user's own Rails app and external-user feedback remain future opportunities to validate the workflow.
 
-Local Windows results: core 28 tests / 234 assertions, playground 33 / 376, Team Notebook 15 / 742; all pass (76 tests / 1,352 assertions). Both Zeitwerk checks and installed-gem CLI checks pass. The new remote CI run awaits publication approval.
+Local Windows results: core 28 tests / 234 assertions, playground 33 / 376, Team Notebook 15 / 742; all pass (76 tests / 1,352 assertions). Both Zeitwerk checks and installed-gem CLI checks pass. See [Actions](https://github.com/johnfreeman13592-lab/rule_lens/actions) for remote Linux/Windows results.
 
 ## Later candidates
 

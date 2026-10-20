@@ -62,7 +62,7 @@ end
 
 `prepare_reproducible_test_data`, `find_test_reader` and `find_test_article` are application-owned placeholders. Run preparation separately in each capture process. Use `bundle binstubs rule_lens`, then `ruby bin/rule_lens compare ...` to launch the comparison from your app, including on Windows paths containing non-ASCII characters.
 
-Local development improves generated capture diagnostics: failures identify the startup/configuration/data preparation stage or list up to ten failed case IDs and exception classes with the saved JSON path. Exception messages and input objects are omitted. Existing generated scripts are preserved; review and manually merge template changes to update them.
+Generated capture scripts identify the startup/configuration/data preparation stage on failure, or list up to ten failed case IDs and exception classes with the saved JSON path. Exception messages and input objects are omitted. Existing generated scripts are preserved; review and manually merge template changes to update them.
 
 The generated script runs only in `test`, rejects `DATABASE_URL`, and refuses empty cases. Check your test database configuration and prepare reproducible fixtures or factories yourself; it does not create, reset or migrate databases. Existing generated files are skipped, including with `--force`. See the [setup guide](docs/saved-comparisons.md#rails用のひな形を生成する開発版).
 

@@ -2,7 +2,7 @@
 
 まず「はるがチームA／Bの管理者の非公開記事を編集できるか」の2ケースだけで、設定からHTML確認まで進む。権限の許可・拒否を比べた後で、Scope（一覧で見える記事の範囲）へ進む。
 
-この導入ガイドと診断表示の改善はローカル検証済みで、GitHubへの反映は承認待ち。Rails／Punditのあるアプリが対象で、データ準備やGit操作を自動化する機能ではない。
+この導入ガイドと診断表示の改善はGitから導入する版で利用できる。Rails／Punditのあるアプリが対象で、データ準備やGit操作を自動化する機能ではない。RubyGemsには未配布。
 
 ## 1. 作業場所と導入
 
@@ -203,4 +203,4 @@ ruby ../../exe/rule_lens scope-compare tmp/first-scope-intended.json tmp/first-s
 
 152件の権限と8件のScopeを使う[詳しい試用ガイド](trial-guide.md)、[保存形式と比較条件](saved-comparisons.md)、[Scopeの設定](scope-comparisons.md)も参照。この手順は自己試用用であり、実際の利用者による評価とは区別する。
 
-ローカルでは、ひな形のない一時コピーから実際のRailsコマンドで生成し、このページの設定コードをそのまま使って3コミットの権限／Scope比較と失敗からの復旧を検証した。Windows / Ruby 4.0.7で全76テスト・1,352 assertions、両RailsアプリのZeitwerk、生成gemのインストール後CLIが成功。今回の変更のリモートCIは公開承認後に実行する。
+ローカルでは、ひな形のない一時コピーから実際のRailsコマンドで生成し、このページの設定コードをそのまま使って3コミットの権限／Scope比較と失敗からの復旧を検証した。Windows / Ruby 4.0.7で全76テスト・1,352 assertions、両RailsアプリのZeitwerk、生成gemのインストール後CLIが成功。Linux／Windowsを含むリモートCIの実行結果は[Actions](https://github.com/johnfreeman13592-lab/rule_lens/actions)を参照。
