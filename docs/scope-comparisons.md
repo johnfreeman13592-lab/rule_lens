@@ -1,6 +1,6 @@
 # Scope比較の計画と使い方
 
-利用者が次の開発範囲としてScope比較を選択した。初版は、同じ論理データに対してPundit Scopeを各版で実行し、見えるレコードの追加・削除を比較する。ローカル開発版であり、公開mainには未反映。
+同じ論理データに対してPundit Scopeを各版で実行し、見えるレコードの追加・削除を比較する。Gitから導入する版で利用できる。RubyGemsには未配布。
 
 ## 完成条件
 
@@ -12,7 +12,7 @@
 - SQLiteの別Railsアプリで、順序や物理IDが変わっても同じ結果になることと、他人の非公開記事が見えるバグを検出できることを検証する。
 - 既存の権限判定API、JSON形式、CLIを維持する。
 
-上記の初版の実装・ローカル検証は完了。core 28テスト234 assertions、Rails 31テスト283 assertions、計59テストが成功。インストール後の両CLI、Zeitwerk、ブラウザでのScopeレポートも確認済み。GitHubへの反映と今回のリモートCIは未実施。
+上記の初版の実装・ローカル検証は完了。core 28テスト234 assertions、Rails 31テスト283 assertions、計59テストが成功。インストール後の両CLI、Zeitwerk、ブラウザでのScopeレポートも確認済み。リモートCIの結果は[Actions](https://github.com/johnfreeman13592-lab/rule_lens/actions)を参照。
 
 ## 設計
 

@@ -12,7 +12,7 @@ RuleLens runs named permission cases against your existing Pundit policies, save
 | Editor edits an article | Denied | Allowed | Granted — intended |
 | Reader edits an article | Denied | Allowed | Granted — review this |
 
-This is an early **v0.2.0 MVP**. It compares the cases you supply; it does not prove that your application is secure. Scope comparisons and automatic Git checkout are not included.
+This is an early **v0.2.0 MVP**, with further improvements available from Git. It compares the cases you supply; it does not prove that your application is secure. Scope visibility comparison uses the separate `scope-compare` workflow below. Automatic Git checkout is not included.
 
 ## Try the interactive demo
 
@@ -102,7 +102,7 @@ On Windows paths containing non-ASCII characters, use `ruby bin/rails` and `ruby
 
 ## Documentation
 
-- [Scope comparison: local development milestone](docs/scope-comparisons.md)
+- [Scope comparison: capture visible records and review added/removed keys](docs/scope-comparisons.md)
 - [Architecture](docs/design.md)
 - [Capture format, comparison conditions and CLI](docs/saved-comparisons.md)
 - [Interactive demo](docs/pundit-demo.md)

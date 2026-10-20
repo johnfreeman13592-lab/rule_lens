@@ -6,7 +6,7 @@
 
 例えば、編集者に記事の編集を許可するつもりが、一般の読者まで編集できるようになっていた。RuleLensは、そうした権限の変化をケースごとに表で見せます。既存のPunditポリシーを書き直す必要はありません。
 
-初期の **v0.2.0 MVP** です。用意したケースの結果を比較するもので、アプリ全体の安全性を証明する仕組みではありません。Scope比較とGitの自動操作は今後の候補です。
+初期の **v0.2.0 MVP** に加え、Gitから使える改善を進めています。用意したケースの結果を比較するもので、アプリ全体の安全性を証明する仕組みではありません。Scopeの閲覧範囲比較は別コマンド `scope-compare` を使います。Gitの自動操作は含みません。
 
 ## 最初の体験
 
@@ -71,7 +71,7 @@ bundle exec rule_lens compare before.json after.json --output review.html
 
 ## 次に読む
 
-- [Scope比較の計画・使い方（ローカル開発版）](docs/scope-comparisons.md)
+- [Scope比較の計画・使い方](docs/scope-comparisons.md)
 - [SQLiteのDBを使う別Railsアプリ](examples/policy_review/README.md)
 - [保存形式・CLI・入力をそろえる条件](docs/saved-comparisons.md)
 - [試作APIと画面の説明](docs/pundit-demo.md)

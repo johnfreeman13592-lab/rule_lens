@@ -10,7 +10,7 @@ Pundit authorization failures become `denied`; setup failures, missing methods a
 
 The unreleased Rails install generator scaffolds an application-owned configuration and capture script. Rails discovers it from the gem's `lib/generators` path; loading the core does not load Rails. The script restricts execution to the test environment and requires at least one case. It deliberately leaves fixture preparation and database configuration to the application. Re-running the installer preserves existing files, including when passed `--force`.
 
-Local development also supports capture groups: each group supplies its own policy and cases, while metadata and case IDs belong to the whole snapshot. All groups are validated before any setup runs. Group boundaries and Ruby policy names are not serialized, preserving format version 1 and comparison by stable case ID. The original single-policy capture API remains valid.
+Capture groups supply their own policy and cases, while metadata and case IDs belong to the whole snapshot. All groups are validated before any setup runs. Group boundaries and Ruby policy names are not serialized, preserving format version 1 and comparison by stable case ID. The original single-policy capture API remains valid.
 
 ## Compare
 
@@ -22,7 +22,7 @@ Missing cases and evaluation errors remain visible. The comparator does not clai
 
 The CLI writes an offline HTML report with escaped labels and no script or external assets. Output files are created exclusively to avoid replacing a baseline or report accidentally.
 
-## Scope comparison (local development)
+## Scope comparison
 
 Scope captures store sorted stable record keys instead of boolean permissions. `ScopeSnapshots::Snapshot` reuses the bounded JSON reader and immutable storage but validates a separate `kind: "pundit_scope"` schema. Both the library and CLI reject mixing scope and permission snapshots. A Scope case evaluates a fresh explicit Scope class, and key extraction/duplicate/limit errors discard partial keys. Unmatched or changed case definitions do not imply membership additions or removals. See [the scope plan](scope-comparisons.md).
 

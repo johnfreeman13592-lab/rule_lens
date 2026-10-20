@@ -21,7 +21,7 @@ The release workflow runs core tests on Ruby 3.3, 3.4 and 4.0, and the Rails sui
 - [x] Generate application-owned cases and a test-only Rails capture script.
 - [x] Capture multiple Pundit policies in one snapshot with global case IDs.
 
-This implementation milestone is complete. The grouped capture change is currently local; the report and generator improvements are on public main. Publication status is separate from implementation completion.
+This implementation milestone is complete. The report, generator and grouped capture improvements are available from Git. RubyGems distribution remains a separate step.
 
 ## Next: learn from real integrations
 
@@ -29,16 +29,16 @@ Implemented after the MVP (unreleased): reports prioritize incomplete comparison
 
 Also unreleased: a Rails install generator creates editable case definitions and a test-only capture script, preserving existing files. It reduces copying from the example; application-specific case and fixture setup still needs user input.
 
-Local development, not yet on public main: capture multiple policy groups into one snapshot, with global case IDs and validation before evaluation. The SQLite example covers article and profile policies together.
+Capture multiple policy groups into one snapshot, with global case IDs and validation before evaluation. The SQLite example covers article and profile policies together.
 
 - Reduce the effort needed to define cases and reproduce logical input data.
 - Improve report navigation based on actual review workflows.
 - Gather minimal, synthetic examples of comparisons that are difficult to review.
 - Evaluate database fixture strategies beyond the included SQLite example.
 
-## Scope comparison milestone — local implementation complete
+## Scope comparison milestone — implementation complete
 
-The user selected this milestone after the MVP. See [the plan, API and verification](scope-comparisons.md).
+See [the scope plan, API and verification](scope-comparisons.md).
 
 - [x] Capture an explicit Pundit Scope with stable per-record keys.
 - [x] Store independent, bounded JSON outcomes and distinguish empty results from errors.
@@ -47,7 +47,7 @@ The user selected this milestone after the MVP. See [the plan, API and verificat
 - [x] Verify different physical database IDs and accidental private-article exposure in separate Rails processes.
 - [x] Preserve the existing permission API and reject mixed snapshot types.
 
-All 59 local tests pass. This feature is not yet on public main; remote CI for it has not run.
+All 59 local tests pass. CI covers Ruby 3.3 / 3.4 / 4.0 and Rails on Linux / Windows; see [Actions](https://github.com/johnfreeman13592-lab/rule_lens/actions) for current results. Source installation from Git includes Scope comparison.
 
 ## Later candidates
 
