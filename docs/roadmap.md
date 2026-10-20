@@ -14,6 +14,15 @@
 
 The release workflow runs core tests on Ruby 3.3, 3.4 and 4.0, and the Rails suite on Linux and Windows. See [Actions](https://github.com/johnfreeman13592-lab/rule_lens/actions) for actual results.
 
+## Post-MVP implementation milestone
+
+- [x] Prioritize incomplete comparisons and permission changes in reports.
+- [x] Retain unchanged coverage in a native collapsed section.
+- [x] Generate application-owned cases and a test-only Rails capture script.
+- [x] Capture multiple Pundit policies in one snapshot with global case IDs.
+
+This implementation milestone is complete. The grouped capture change is currently local; the report and generator improvements are on public main. Publication status is separate from implementation completion.
+
 ## Next: learn from real integrations
 
 Implemented after the MVP (unreleased): reports prioritize incomplete comparisons and permission changes, with unchanged cases in a native collapsed section. All cases and category counts remain available offline.
@@ -28,6 +37,8 @@ Local development, not yet on public main: capture multiple policy groups into o
 - Evaluate database fixture strategies beyond the included SQLite example.
 
 ## Later candidates
+
+These are candidates, not an agreed implementation checklist. Choose the next milestone before expanding scope. The remaining trial work requires an actual application and feedback; synthetic integration tests do not establish real-user adoption or repeat use.
 
 - Pundit Scope comparisons: which records become visible or disappear.
 - Reuse reviewed cases as regression tests.
