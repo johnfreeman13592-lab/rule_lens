@@ -59,24 +59,48 @@ module RuleLens
       Report.new(rows.freeze)
     end
 
-    def self.capture(cases:, policy:, suite:, revision:, data_version:, context: {})
-      unless cases.is_a?(Array) && cases.all? { |item| item.is_a?(Case) } && policy.is_a?(Class)
-        raise ArgumentError, "expected an Array of Cases and a policy Class"
-      end
-      raise ArgumentError, "duplicate case id" unless cases.map(&:id).uniq.size == cases.size
+    def self.capture(suite:, revision:, data_version:, context: {}, cases: nil, policy: nil, groups: nil)
+      entries = capture_entries(cases, policy, groups)
+      ids = entries.map { |item, _| item.id }
+      raise ArgumentError, "duplicate case id across capture" unless ids.uniq.size == ids.size
 
       # Validate metadata and case definitions before running application code.
       metadata = { "format_version" => 1, "suite" => suite, "revision" => revision, "data_version" => data_version, "context" => context }
-      definitions = cases.map do |item|
+      definitions = entries.map do |item, _|
         { "id" => item.id, "label" => item.label, "query" => item.query.to_s, "case_version" => item.version, "status" => "denied", "error_class" => nil }
       end
       Snapshots::Snapshot.new(metadata.merge("cases" => definitions))
-      outcomes = cases.zip(definitions).map do |item, definition|
-        result = evaluate(item, policy)
+      outcomes = entries.zip(definitions).map do |(item, selected_policy), definition|
+        result = evaluate(item, selected_policy)
         definition.merge("status" => result.status.to_s, "error_class" => result.error_class)
       end
       Snapshots::Snapshot.new(metadata.merge("cases" => outcomes))
     end
+
+    def self.capture_entries(cases, policy, groups)
+      if groups.nil?
+        unless cases.is_a?(Array) && cases.all? { |item| item.is_a?(Case) } && policy.is_a?(Class)
+          raise ArgumentError, "expected an Array of Cases and a policy Class"
+        end
+        return cases.map { |item| [item, policy] }
+      end
+      unless cases.nil? && policy.nil?
+        raise ArgumentError, "use groups or cases/policy, not both"
+      end
+      unless groups.is_a?(Array) && !groups.empty?
+        raise ArgumentError, "groups must be a non-empty Array"
+      end
+
+      groups.flat_map do |group|
+        unless group.is_a?(Hash) && group.size == 2 && group.key?(:cases) && group.key?(:policy) &&
+            group[:policy].is_a?(Class) && group[:cases].is_a?(Array) && !group[:cases].empty? &&
+            group[:cases].all? { |item| item.is_a?(Case) }
+          raise ArgumentError, "each group must contain only a policy Class and non-empty cases of RuleLens::Pundit::Case"
+        end
+        group[:cases].map { |item| [item, group[:policy]] }
+      end
+    end
+    private_class_method :capture_entries
 
     def self.evaluate(item, policy)
       # A fresh setup and policy for each side prevents shared policy caches.

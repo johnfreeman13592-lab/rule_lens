@@ -20,6 +20,8 @@ Implemented after the MVP (unreleased): reports prioritize incomplete comparison
 
 Also unreleased: a Rails install generator creates editable case definitions and a test-only capture script, preserving existing files. It reduces copying from the example; application-specific case and fixture setup still needs user input.
 
+Local development, not yet on public main: capture multiple policy groups into one snapshot, with global case IDs and validation before evaluation. The SQLite example covers article and profile policies together.
+
 - Reduce the effort needed to define cases and reproduce logical input data.
 - Improve report navigation based on actual review workflows.
 - Gather minimal, synthetic examples of comparisons that are difficult to review.

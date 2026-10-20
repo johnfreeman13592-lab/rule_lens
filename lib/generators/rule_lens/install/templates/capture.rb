@@ -18,7 +18,10 @@ begin
   require_relative "../config/rule_lens_cases"
 
   options = RuleLensCapture.options
-  unless options.is_a?(Hash) && options[:cases].is_a?(Array) && !options[:cases].empty?
+  unless options.is_a?(Hash)
+    raise ArgumentError, "RuleLensCapture.options must return a Hash."
+  end
+  if options[:groups].nil? && !(options[:cases].is_a?(Array) && !options[:cases].empty?)
     raise ArgumentError, "Configure at least one case in config/rule_lens_cases.rb before capturing."
   end
 

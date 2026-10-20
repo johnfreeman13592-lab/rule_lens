@@ -25,3 +25,16 @@ ruby ../../exe/rule_lens compare before.json after.json --output review.html
 このサンプルは `RAILS_ENV=test` 専用。`DATABASE_URL` が設定されていたり、別のRails環境が指定されていたりしたら実行を拒否する。DBをリセットする処理を実アプリにそのまま移植せず、利用アプリのテスト用fixturesやfactoryを使ってください。
 
 [保存形式・CLI・比較条件の詳細](../../docs/saved-comparisons.md)
+
+## 複数ポリシーの収録例（ローカル開発版）
+
+`ReviewCases.groups` は、従来の記事6ケースと、`ProfilePolicy` で本人・編集者・読者が本人のプロフィールを編集できるかの3ケースを返す。既存の `script/capture.rb` は単一ポリシー6ケースのまま維持する。
+
+新しい導入用収録スクリプトの `RuleLensCapture.options` で、テストデータ準備後に以下を返すと、9ケースをまとめて収録できる。
+
+```ruby
+ReviewData.prepare
+{ suite: "application", data_version: "v1", groups: ReviewCases.groups }
+```
+
+このDB初期化は、このサンプルの独立したメモリ内DB専用。実アプリへそのまま移植しない。統合テストでは、生成したスクリプトから2ポリシーを収録し、プロフィール側の権限を変えたときに、その2ケースだけが新規許可になることを確認する。

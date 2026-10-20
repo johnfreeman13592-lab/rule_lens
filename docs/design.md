@@ -10,6 +10,8 @@ Pundit authorization failures become `denied`; setup failures, missing methods a
 
 The unreleased Rails install generator scaffolds an application-owned configuration and capture script. Rails discovers it from the gem's `lib/generators` path; loading the core does not load Rails. The script restricts execution to the test environment and requires at least one case. It deliberately leaves fixture preparation and database configuration to the application. Re-running the installer preserves existing files, including when passed `--force`.
 
+Local development also supports capture groups: each group supplies its own policy and cases, while metadata and case IDs belong to the whole snapshot. All groups are validated before any setup runs. Group boundaries and Ruby policy names are not serialized, preserving format version 1 and comparison by stable case ID. The original single-policy capture API remains valid.
+
 ## Compare
 
 Capture each code revision in its own application process. The standalone comparator validates the JSON and requires matching suite, data version and context. It joins cases by ID, rather than array position or database primary key. Changed queries or case versions are marked separately from permission changes.

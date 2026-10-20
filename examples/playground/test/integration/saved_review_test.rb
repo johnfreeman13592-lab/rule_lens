@@ -96,7 +96,7 @@ class SavedReviewTest < ActiveSupport::TestCase
 
   test "discovered install generator produces a usable capture and preserves existing files" do
     require "rails/generators"
-    with_review_app do |directory, _|
+    with_review_app do |directory, repo_root|
       # Discover the generator as Rails does, rather than requiring its class.
       capture_io { Rails::Generators.invoke("rule_lens:install", [], destination_root: directory) }
       config = File.join(directory, "config/rule_lens_cases.rb")
@@ -152,6 +152,34 @@ class SavedReviewTest < ActiveSupport::TestCase
       error_json = File.read(File.join(directory, "error.json"), encoding: "UTF-8")
       assert_includes error_json, "RuntimeError"
       refute_includes error_json, "private input"
+
+      grouped = <<~RUBY
+        module RuleLensCapture
+          def self.options
+            ReviewData.prepare
+            { suite: "application", data_version: "v1", groups: ReviewCases.groups }
+          end
+        end
+      RUBY
+      File.write(config, grouped, encoding: "UTF-8")
+      output = successful(directory, RbConfig.ruby, "script/rule_lens_capture.rb", "grouped-before.json", "baseline")
+      assert_includes output, "Saved 9 cases (0 errors)"
+      before = RuleLens::Snapshots::Snapshot.load(File.join(directory, "grouped-before.json"))
+      profile = File.join(directory, "app/policies/profile_policy.rb")
+      File.write(profile, File.read(profile).sub('@user.id == @record.id', 'true'))
+      successful(directory, RbConfig.ruby, "script/rule_lens_capture.rb", "grouped-after.json", "candidate")
+      after = RuleLens::Snapshots::Snapshot.load(File.join(directory, "grouped-after.json"))
+      report = RuleLens::Snapshots.compare(before: before, after: after)
+      assert_equal %w[profile.editor.update profile.reader.update], report.changes.map(&:id)
+      assert_equal 9, report.rows.size
+      assert_empty report.errors
+      refute report.incomplete?
+      _, error, result = execute(directory, RbConfig.ruby, File.join(repo_root, "exe/rule_lens"), "compare",
+        "grouped-before.json", "grouped-after.json", "--output", "grouped-review.html", "--fail-on-change")
+      assert_equal 1, result.exitstatus, error
+      html = File.read(File.join(directory, "grouped-review.html"), encoding: "UTF-8")
+      assert_includes html, "2件の権限が変化"
+      assert_equal 9, html.scan('<th scope="row">').size
     end
   end
 end

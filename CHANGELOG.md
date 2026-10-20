@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Support multiple Pundit policy groups in a single capture, validating case IDs across the whole snapshot before evaluation.
 - Add `rails generate rule_lens:install` to create editable cases and a guarded capture script without overwriting existing files.
 - Group offline HTML reports into incomplete comparisons, permission changes and unchanged cases.
 - Keep unchanged cases in a collapsed, keyboard-accessible disclosure without JavaScript.

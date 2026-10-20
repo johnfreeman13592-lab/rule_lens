@@ -129,4 +129,64 @@ class PunditComparisonTest < ActiveSupport::TestCase
       RuleLens::Pundit.capture(cases: [item], policy: AllowPolicy, suite: "", revision: "base", data_version: "v1")
     end
   end
+
+  def capture_groups(groups, **metadata)
+    RuleLens::Pundit.capture(groups: groups, suite: "application", revision: "base", data_version: "v1", **metadata)
+  end
+
+  test "captures multiple policy groups in one snapshot and compares by global case ids" do
+    article = sample_case(id: "article.reader.update")
+    profile = sample_case(id: "profile.owner.update")
+    before = capture_groups([{ policy: DenyPolicy, cases: [article] }, { policy: AllowPolicy, cases: [profile] }])
+    after = capture_groups([{ policy: AllowPolicy, cases: [profile, article] }], revision: "candidate")
+    assert_equal %w[denied allowed], before.data["cases"].map { |item| item["status"] }
+    assert_equal [article.id, profile.id], before.data["cases"].map { |item| item["id"] }
+    assert_equal 1, before.data["format_version"]
+    report = RuleLens::Snapshots.compare(before: before, after: after)
+    assert_equal [article.id], report.changes.map(&:id)
+    assert_equal [:granted, :unchanged], report.rows.map(&:kind)
+    refute report.incomplete?
+    assert_equal before.data, RuleLens::Snapshots::Snapshot.parse(before.to_json).data
+  end
+
+  test "grouped evaluation errors do not stop later groups or retain messages" do
+    objects = []
+    fresh = ->(id) { sample_case(id: id) { [nil, Object.new.tap { |record| objects << record }] } }
+    snapshot = capture_groups([
+      { policy: BrokenPolicy, cases: [fresh.call("broken")] },
+      { policy: AllowPolicy, cases: [fresh.call("allowed")] }
+    ])
+    assert_equal %w[error allowed], snapshot.data["cases"].map { |item| item["status"] }
+    assert_equal "RuntimeError", snapshot.data["cases"].first["error_class"]
+    assert_equal 2, objects.map(&:object_id).uniq.size
+    refute_includes snapshot.to_json, "private input"
+  end
+
+  test "group definitions ids and metadata are all validated before any setup runs" do
+    guarded = sample_case { flunk "invalid groups must not execute cases" }
+    first = { policy: AllowPolicy, cases: [guarded] }
+    [nil, {}, { policy: AllowPolicy }, { policy: nil, cases: [guarded] },
+      { policy: AllowPolicy, cases: [] }, { policy: AllowPolicy, cases: [Object.new] },
+      { policy: AllowPolicy, cases: [guarded], typo: true },
+      { "policy" => AllowPolicy, "cases" => [guarded] }, first].each do |invalid|
+      assert_raises(ArgumentError) { capture_groups([first, invalid]) }
+    end
+    [[], "not groups", {}].each { |invalid| assert_raises(ArgumentError) { capture_groups(invalid) } }
+    assert_raises(ArgumentError) { capture_groups([first], cases: [guarded], policy: AllowPolicy) }
+    assert_raises(ArgumentError) { capture_groups([first], policy: AllowPolicy) }
+    assert_raises(RuleLens::Snapshots::InvalidSnapshot) { capture_groups([first], context: { "clock" => 1 }) }
+  end
+
+  test "single group capture preserves the existing capture format and version checks" do
+    item = sample_case
+    old = RuleLens::Pundit.capture(cases: [item], policy: AllowPolicy, suite: "application", revision: "base", data_version: "v1")
+    grouped = capture_groups([{ policy: AllowPolicy, cases: [item] }])
+    assert_equal old.to_json, grouped.to_json
+    changed = RuleLens::Pundit::Case.new(id: item.id, label: item.label, query: :update?, version: "2") { [nil, Object.new] }
+    after = capture_groups([{ policy: DenyPolicy, cases: [changed] }])
+    report = RuleLens::Snapshots.compare(before: old, after: after)
+    assert_equal :case_changed, report.rows.first.kind
+    assert_empty report.changes
+    assert report.incomplete?
+  end
 end

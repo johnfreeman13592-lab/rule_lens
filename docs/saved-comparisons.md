@@ -80,6 +80,34 @@ gemとしてインストールした場合の実行名は `rule_lens`。`--fail-
 
 識別子の付け忘れや、実際には異なる入力を同じデータ版として渡したことまでは自動検出できない。既存のテストを置き換える仕組みではない。
 
+## 複数ポリシーを一つに収録する（未公開の開発版）
+
+記事とプロフィールなど、複数のポリシーを一つの比較対象にしたい場合は `groups` を使う。以下はローカル開発ブランチの機能で、公開mainにはまだ含まれない。
+
+```ruby
+snapshot = RuleLens::Pundit.capture(
+  suite: "application-permissions", revision: "baseline",
+  data_version: "fixtures-v1", context: {},
+  groups: [
+    { policy: ArticlePolicy, cases: article_cases },
+    { policy: ProfilePolicy, cases: profile_cases }
+  ]
+)
+snapshot.write("before.json")
+```
+
+`article_cases` / `profile_cases` は既存と同じ `RuleLens::Pundit::Case` の配列。各グループに `policy` と空でない `cases` を指定する。収録全体の `suite`、`revision`、`data_version`、`context` は共通で、すべての入力を同じ比較条件にそろえる。
+
+- `groups` と従来のトップレベルの `policy` / `cases` は併用しない。従来の単一ポリシーの呼び出し方は引き続き使える。
+- ケースIDはグループをまたいで一意にする。例えば `article.reader.update` と `profile.reader.update`。自動で接頭辞を付けたり、名前を変更したりはしない。
+- グループの順番・区切りは対応キーにしない。同じIDなら同じケースとして比較する。ケースの意味や入力の作り方が変わった場合は、従来どおりケースの `version` も更新する。
+- 全グループの定義・ID重複・メタデータを確認してから、最初のケースを実行する。途中の評価エラーは記録し、後のグループも収録を続ける。
+- 保存形式は引き続き `format_version: 1`。ポリシーのRubyクラス名や入力オブジェクトは保存しない。比較CLIやHTMLは通常の一つのスナップショットとして扱う。
+
+導入ジェネレーターで作った `RuleLensCapture.options` も、トップレベルの `policy` / `cases` の代わりに `groups` を返せる。ただし以前に生成したスクリプトは再生成では上書きされないため、旧スクリプトからグループ収録へ移行する場合は生成元の差分も確認する。
+
+[SQLiteサンプル](../examples/policy_review/README.md)の `ReviewCases.groups` は、記事6ケースとプロフィール3ケースをまとめる例。利用者の実アプリでの導入検証は今後。
+
 ## Rails用のひな形を生成する（開発版）
 
 この機能は次回リリース向けの改善としてGitから利用できる。RubyGemsには未配布。GitHubのmainまたはローカルのpath指定で導入したRailsアプリでは、次のコマンドを使える。
